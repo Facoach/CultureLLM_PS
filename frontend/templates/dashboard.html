@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="ita">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <link rel="stylesheet" href="/static/css/dashboard.css">
+    <link rel="stylesheet" href="/static/css/ask.css">
+    <link rel="stylesheet" href="/static/css/leaderboard.css">
+    <link rel="stylesheet" href="/static/css/answer.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-left">
+            <button class="tab-button active" data-tab-name="ask">Ask</button>
+            <button class="tab-button" data-tab-name="leaderboard">Leaderboard</button>
+            <button class="tab-button" data-tab-name="answer">Answer</button>
+        </div>
+        <div class="nav-right">
+            <a href="http://localhost:8001/profile" class="profile-btn">My Profile</a>
+        </div>
+    </nav>
+
+    <!--<h1>La Mia Dashboard</h1>-->
+    <div class="dashboard-layout">
+        <div id="ask-content" class="tab-content active">Caricamento Ask...</div>
+        <div id="leaderboard-content" class="tab-content">Caricamento Leaderboard...</div>
+        <div id="answer-content" class="tab-content">Caricamento Answer...</div>
+    
+
+        <!--<p>{{message}}</p>-->
+
+    </div>
+    
+    <script src="/static/js/dashboard.js"></script>
+</body>
+
+</html>

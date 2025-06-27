@@ -1,0 +1,234 @@
+        body {
+            margin: 0;
+        font-family: 'Segoe UI', Arial, sans-serif;
+        background-image: url('/templates/profile_background.jpg');
+        background-size: cover;
+        background-repeat: no-repeat;
+        background-attachment: fixed;
+        background-position: center;
+        background-color: #21223a;
+        }
+        .navbar {
+            width: 100vw;
+            background: #1a1a1a;
+            color: #fff;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 36px;
+            box-sizing: border-box;
+        }
+        .nav-left {
+            display: flex;
+            gap: 12px;
+        }
+        .tab-button,
+        .tab-button:visited,
+        .tab-button:active,
+        .tab-button:hover {
+            padding: 8px 16px;
+            background: none;
+            color: #fff;
+            font-size: 16px;
+            border: none;
+            border-radius: 5px;
+            text-decoration: none;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .tab-button:hover,
+        .tab-button.active {
+            background: #484863;
+            color: #fff;
+        }
+        .profile-btn {
+            padding: 8px 18px;
+            background: none;
+            color: #ececec;
+            border-radius: 5px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: background 0.2s;
+        }
+        .profile-btn:hover {
+            background: #484863;
+        }
+        .profile-title {
+            text-align: center;
+            font-size: 2rem;
+            font-weight: 700;
+            margin: 28px 0 26px 0;
+            color: #ececec;
+        }
+        .profile-card {
+            max-width: 550px;
+            min-height: 120px;
+            margin: 0 auto 22px auto;
+            background: #37374F;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px #0001;
+            display: flex;
+            align-items: center;
+            gap: 22px;
+            padding: 26px 24px;
+        }
+        .profile-pic {
+            width: 88px;
+            height: 88px;
+            border-radius: 50%;
+            object-fit: cover;
+            background: #ececec;
+        }
+        .profile-main-info {
+            flex: 1;
+        }
+        .username {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: #ececec
+        }
+        /* Invito: label grigia + codice invito in grigio più chiaro */
+.invite-bar {
+    display: flex;
+    align-items: center;
+    margin-top: 7px;
+}
+.invite-label {
+    background: #737392;
+    color: #363644;
+    font-size: 1rem;
+    padding: 7px 14px;
+    border-radius: 7px 0 0 7px;
+    font-weight: 500;
+}
+.invite-code {
+   
+    min-width: 200px;
+    background: #a4a4c4;
+    color: #66667a;
+    font-size: 1rem;
+    padding: 7px 14px;
+    border-radius: 0 7px 7px 0;
+    font-weight: 500;
+    border-left: 1px solid #ddd;
+    letter-spacing: 1px;
+    margin-right: 0;
+}
+.copy-btn {
+    background: #7f7f9e;
+    color: #15151f;
+    border: none;
+    border-radius: 7px;
+    padding: 7px 14px;
+    font-size: 1rem;
+    margin-left: 6px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.copy-btn:active {
+    background: #bdbdbd !important;  /* Più scuro solo mentre è premuto */
+}
+        .card-section-title {
+            max-width: 500px;
+            margin: 38px auto 6px auto;
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #c2c3d3;
+            letter-spacing: 1px;
+            /* Aggiungi queste due righe: */
+            text-align: left;
+        }
+
+        .stats-card,
+        .security-card {
+            max-width: 500px;
+            margin: 0 auto 18px auto;
+            background: #37374F;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px #0001;
+            padding: 22px 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+    
+        .stat-item {
+            font-size: 1rem;
+            color: #ececec;
+        }
+        .security-card {
+            gap: 16px;
+        }
+        .profile-actions {
+            display: flex;
+            gap: 16px;
+            margin-top: 10px;
+        }
+        .dashboard-btn {
+            padding: 8px 18px;
+            background: #007bff;
+            color: #ececec;
+            border: none;
+            border-radius: 5px;
+            text-decoration: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .dashboard-btn:hover {
+            background: #0056b3;
+        }
+        .change-pass-link {
+            color: #ececec;
+            text-decoration: underline;
+            font-size: 1rem;
+            font-weight: 500;
+            margin-top: 2px;
+        }
+        .logout-form {
+            max-width: 500px;
+            margin: 24px auto 0 auto;
+            text-align: center;
+        }
+        .logout-form-inside {
+            margin: 0;
+            text-align: left;
+        }
+        .logout-btn {
+            padding: 9px 22px;
+            background: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 1rem;
+            margin-top: 0;
+            transition: background 0.2s;
+        }
+        .logout-btn:hover {
+            background: #b52a36;
+        }
+        .resetpass-btn {
+    display: inline-block;
+    padding: 8px 18px;
+    background: #484863;
+    color: #ececec;
+    border-radius: 5px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 1rem;
+    transition: background 0.18s;
+    border: none;
+    cursor: pointer;
+    margin-bottom: 2px;
+}
+.resetpass-btn:hover {
+    background: #31314a;
+    color: #fff;
+}
+        @media (max-width: 600px) {
+            .profile-card, .stats-card { flex-direction: column; align-items: center; padding: 12px 4px; }
+            .profile-pic { width: 60px; height: 60px; }
+        }

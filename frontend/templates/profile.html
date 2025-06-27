@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profilo</title>
+    <link rel="stylesheet" href="/static/css/profile.css">
+</head>
+
+<script src="/static/js/ask.js"></script>
+<body>
+    <nav class="navbar">
+        <div class="nav-left">
+            <a href="/dashboard#ask" class="tab-button">Ask</a>
+            <a href="/dashboard#leaderboard" class="tab-button">Leaderboard</a>
+            <a href="/dashboard#answer" class="tab-button">Answer</a>
+        </div>
+        <div class="nav-right">
+            <a href="/profile" class="profile-btn active">Profilo</a>
+        </div>
+    </nav>
+
+    <div class="profile-title">Profilo</div>
+
+    <div class="profile-card">
+        <img src="/templates/profile_picture.jpeg" alt="Immagine profilo" class="profile-pic">
+        <div class="profile-main-info">
+            <div class="username">{{ username }}</div>
+            <div class="invite-bar">
+                <div class="invite-label">Link Invito</div>
+                <div class="invite-code" id="invite-code">0000-0000-0000</div>
+                <button class="copy-btn" type="button" onclick="copyInviteCode()">Copia</button>
+            </div>
+            
+        </div>
+    </div>
+
+        <div class="card-section-title">Statistiche</div>
+    <div class="stats-card">
+        <div class="stat-item">Punteggio: <b>{{ score }}</b></div>
+        <div class="stat-item">Domande poste: <b>{{ questions }}</b></div>
+        <div class="stat-item">Risposte date: <b>{{ answers }}</b></div>
+    </div>
+
+    <!-- Titolo sicurezza e card sicurezza -->
+    <div class="card-section-title">Sicurezza</div>
+    <div class="security-card">
+        <a href="/directpassreset" class="resetpass-btn">Cambia password</a>
+        <form action="/logout" method="POST" class="logout-form-inside">
+            <button type="submit" class="logout-btn">Logout</button>
+        </form>
+    </div>
+    
+
+
+</body>
+</html>

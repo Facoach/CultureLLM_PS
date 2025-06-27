@@ -1,0 +1,107 @@
+body, html {
+    margin: 0;
+    padding: 0;
+    background: #37374F;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    overflow: hidden;
+}
+.dashboard-layout {
+    height: calc(100vh - 12px); /* 56px = altezza navbar */
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    background-color: #37374F; 
+    height: calc(100vh - 56px); /* se la navbar è 56px */
+    width: 100vw;
+    height: 100vw;
+    overflow: hidden;
+    display: flex;
+}
+.tab-content { 
+    width: 100vw;
+    height: 100vw;
+    
+    background: #37374F !important;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px #0001;
+  
+
+    margin-left: 0;
+    margin-right: 0;
+    margin-bottom: 0;
+    display: none;
+    }
+    
+    .tab-content.active {
+        
+        display: flex;
+        display: block;
+        
+    }
+ 
+.navbar {
+display: flex;
+justify-content: space-between;
+align-items: center;
+background: #1a1a1a;
+padding: 10px 40px;
+margin: 0;
+}
+.nav-left {
+display: flex;
+gap: 12px;
+}
+.tab-button {
+padding: 10px 18px;
+border: none;
+background: none;
+font-weight: 600;
+color: #fff;
+font-size: 16px;
+cursor: pointer;
+transition: background 0.2s;
+border-radius: 5px;
+}
+.tab-button.active,
+.tab-button:hover {
+background: #484863;
+color: #fff;
+}
+.nav-right {
+display: flex;
+align-items: center;
+}
+.profile-btn {
+padding: 8px 18px;
+background: none;
+color: white;
+border-radius: 5px;
+text-decoration: none;
+font-weight: 600;
+transition: background 0.2s;
+}
+.profile-btn:hover {
+background: #484863;
+}
+
+
+h1 {
+text-align: center;
+margin-bottom: 20px;
+
+}
+
+
+    .tab-headers button {
+        padding: 10px 15px;
+        margin: 5px;
+        cursor: pointer;
+        border: 1px solid #ccc;
+        background-color: #f0f0f0;
+    }
+    .tab-headers button.active {
+        background-color: #007bff;
+        color: white;
+        border-color: #007bff;
+    }
+

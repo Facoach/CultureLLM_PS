@@ -1,0 +1,16 @@
+<div>
+
+    {{message}}
+    <h1>{{question[1]}}</h1>
+
+    {% for item in answers %}
+    <form class="answer-form" id = "invia" action="/best" method="POST">
+        <input type="hidden" id="questionid" name="questionid" value="{{question[0]}}">
+        <input type="hidden" id="answerid" name="answerid" value="{{item[0]}}">
+        <button type="submit">{{item[1]}}</button>
+    </form>
+    {% endfor %}
+    
+
+</div>
+

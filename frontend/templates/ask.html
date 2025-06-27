@@ -1,0 +1,118 @@
+<div class="ask-layout">
+    <!-- DEBUG ogni domanda è del tipo [id, testo, tema, answered, checked]
+    <pre>{{ domande | safe }}</pre> 
+    -->
+    
+    <!---->
+    <!-- BLOCCO A SINISTRA CON LE DOMANDE -->
+    <div class="ask-sidebar">
+        <!-- 1. Domande in lavorazione -->
+        <div class="sidebar-section">
+            <div class="section-title">In lavorazione</div>
+            <div id="pending-questions">
+                <!--Domande che non hanno ricevuto una risposta-->
+                {% set lavorazione = domande | selectattr("3", "equalto", 0) | list %}
+                <!--Hanno ricevuto una risposta ma devono essere valutate-->
+                {% set in_review = domande | selectattr("3", "equalto", 1) | selectattr("4", "equalto", 0) | list %}
+                <!--Tutte le domande che devono essere processate (aspettano risposta o aspettano review)-->
+                {% set domande_lavorazione = lavorazione + in_review %}
+                <!--Controlla se il numero massimo di domande è stato raggiunto-->
+                {% set max_domande = domande_lavorazione | length >= 10 %}
+                {% if domande_lavorazione %}
+                    {% for item in domande_lavorazione %}
+                        
+                        <!-- Quando fai click sul bottone della domanda chiama loadValidate che aggiorna la parte centrale con la valutazione -->
+                        <div class="question-card in-progress">
+                            <button class="question-title"
+                                onclick="loadValidate('{{item[0]}}', '{{item[4]}}')"
+                                data-questionid="{{item[0]}}">
+                                {{item[1]}}
+                                <span class="notif-dot" style="display:none;"></span>
+                            </button>
+                        </div>
+                        
+                    {% endfor %}
+                {% else %}
+                    <div class="no-questions">Nessuna domanda in lavorazione</div>
+                {% endif %}
+            </div>
+        </div>
+        <!--2. Domande completate -->
+        <div class="sidebar-section">
+            <div class="section-title">Completate</div>
+            <div id="answered-questions">
+                <!--Domance che sono state sia risposte sia valutate-->
+                {% set domande_completate = domande | selectattr("3", "equalto", 1) | selectattr("4", "equalto", 1) | list %}
+                {% if domande_completate %}
+                    {% for item in domande_completate %}
+                        <div class="question-card in-progress">
+                            <button class="question-title" onclick="loadValidate('{{item[0]}}', '{{item[4]}}')">
+                                {{item[1]}}
+                            </button>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="no-questions">Nessuna domanda completata</div>
+                {% endif %}
+            </div>
+        </div>
+
+    </div>
+
+    <!-- BLOCCO CENTRALE (CHAT) -->
+    <div class="ask-chat">
+        <!--Chat view viene (il div) viene popolato dinamicamente da javascript-->
+        <div class="chat-container" id="chat-view">
+            <p style="color:#7c7c9a;text-align:center;">{{message}}</p>
+        </div>
+        <div class="ask-form-wrapper">
+            <form id="ask-form" method="POST" action="/ask" class="ask-form">
+                <input type="text" id="question" name="question" required autocomplete="off"
+                       {% if max_domande %} placeholder="Hai già 10 domande in lavorazione! Attendi una risposta per poterne fare altre!."
+                       disabled
+                       {% else %} placeholder="Scrivi la tua domanda..."
+                       {% endif %}>
+                <select id="tema" name="tema" required>
+                    <option value="">-- Tema --</option>
+                    {% for t in temi %}
+                        <option value="{{t}}">{{t}}</option>
+                    {% endfor %}
+                </select>
+                <button type="submit" class="send-btn" {% if max_domande %} disabled {% endif %}>
+                    <img src="/templates/send.png" alt="Invia" class="send-icon">
+                  </button>
+            </form>
+        </div>
+    </div>
+    
+    
+
+    <!-- BLOCCO A DESTRA CON BOH FORSE CLASSIFICA E STATISTICHE? -->
+    <div class="ask-extra">
+        <div class="info-card">
+            <div class="info-title">Statistiche</div>
+            <div class="info-item">
+                Domande in lavorazione: 
+                <b>
+                    {{ domande | selectattr("3", "equalto", 0) | selectattr("4", "equalto", 0) | list | length
+                    + domande | selectattr("3", "equalto", 1) | selectattr("4", "equalto", 0) | list | length }}
+                </b>
+            </div>
+            <div class="info-item">
+                Domande completate: 
+                <b>{{ domande|selectattr("4", "equalto", 1)|list|length }}</b>
+            </div>
+        </div>
+        <div class="info-card">
+            <div class="info-title">Aiuto</div>
+            <div class="info-item">
+                Poni una domanda su cinema, cucina, geografia, calcio…
+            </div>
+        </div>
+        <button onclick="location.reload();" class="refresh-btn">Aggiorna pagina</button>
+    </div>
+
+
+
+
+

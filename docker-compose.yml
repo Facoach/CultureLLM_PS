@@ -1,0 +1,58 @@
+version: '3.8'
+
+services:
+  mariadb-cinema:
+    image: mariadb:11.7.2-ubi9
+    container_name: mariadb-cinema
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+    ports:
+      - "3307:3306"
+    volumes:
+      - ./mariadb_data/:/var/lib/mysql:Z
+      - ./mariadb_init/init.sql:/docker-entrypoint-initdb.d/init.sql
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-proot"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build: 
+      context: .
+      dockerfile: backend/Dockerfile
+    ports:
+      - "8003:8003"
+    environment:
+      - E_HOST_DB=mariadb-cinema
+      - E_PORT_DB=3306
+    depends_on:
+      mariadb-cinema:
+        condition: service_healthy
+    restart: always
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8003/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+    - ./backend:/app/src/backend
+
+  
+  frontend:
+    build: 
+      context: .
+      dockerfile: frontend/Dockerfile
+    ports:
+      - "8001:8001"
+    environment:
+      - BACKEND_API_URL=http://backend:8003
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: always
+    volumes:
+    - ./frontend/src/frontend:/app/src/frontend
+    - ./frontend/templates:/app/templates
+    - ./frontend/static:/app/static
