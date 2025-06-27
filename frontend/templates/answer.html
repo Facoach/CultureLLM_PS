@@ -11,7 +11,7 @@
 
     <div class="answer-form-wrapper">
         <form id="answer-form" action="/answer" method="POST" class="ans-form">
-            <input type="text" id="answer" name="answer" required placeholder="Scrivi la tua risposta...">
+            <input type="text" id="answer" name="answer" required placeholder="Scrivi la tua risposta..." maxlength="255">
             <input type="hidden" id="domandaid" name="domandaid" value="{{payload[0]}}">
             <input type="hidden" id="domanda" name="domanda" value="{{payload[1]}}">
             <input type="hidden" id="tema" name="tema" value="{{payload[2]}}">

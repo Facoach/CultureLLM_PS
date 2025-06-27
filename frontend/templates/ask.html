@@ -67,7 +67,7 @@
         </div>
         <div class="ask-form-wrapper">
             <form id="ask-form" method="POST" action="/ask" class="ask-form">
-                <input type="text" id="question" name="question" required autocomplete="off"
+                <input type="text" id="question" name="question" required autocomplete="off" maxlength="255"
                        {% if max_domande %} placeholder="Hai già 10 domande in lavorazione! Attendi una risposta per poterne fare altre!."
                        disabled
                        {% else %} placeholder="Scrivi la tua domanda..."
