@@ -8,7 +8,7 @@
             <h2>Classifica</h2>
             <ol class="leaderboard-list">
                 
-                {% for entry in leaderboard %}
+                {% for entry in leaderboard [:10] %}
                 <li class="leaderboard-item">
                     <span class="rank">{{ loop.index }}°</span>
                     <span class="name">{{ entry[0] }}</span>
