@@ -6,11 +6,11 @@ from fastapi.staticfiles import StaticFiles
 from typing import Dict, Optional, List, Callable, Any
 from urllib.parse import quote
 import os
+import json
 
 
 # Parametri globali
 BASE_URL = os.getenv("BACKEND_API_URL", "http://localhost:8001")
-TEMI = ["Musica anni '70", "Calcio italiano", "Cucina italiana", "Cinema italiano", "Geografia italiana"]
 
 # Avvio dell'applicazione
 app = FastAPI()
@@ -95,9 +95,6 @@ async def make_backend_request(
         print(f"Errore HTTP durante la richiesta a {endpoint}: {e} - Dettaglio: {detail}")
         template_to_render = error_template if error_template else success_template # Fallback
         if template_to_render:
-            # Ensure 'temi' is passed if it's an ask.html related error
-            if template_to_render == "ask.html" and "temi" not in template_args:
-                template_args["temi"] = TEMI
             return templates.TemplateResponse(template_to_render, {"request": request, "message": detail, **template_args})
         raise e # Re-raise if no error template is provided for a specific HTTP error
 
@@ -105,9 +102,6 @@ async def make_backend_request(
         print(f"Si è verificato un errore di connessione al backend per {endpoint}: {e}")
         template_to_render = error_template if error_template else success_template # Fallback
         if template_to_render:
-            # Ensure 'temi' is passed if it's an ask.html related error
-            if template_to_render == "ask.html" and "temi" not in template_args:
-                template_args["temi"] = TEMI
             return templates.TemplateResponse(template_to_render, {"request": request, "message": f"Impossibile connettersi al servizio di backend: {e}", **template_args})
         raise e # Re-raise if no error template is provided for a connection error
 
@@ -191,7 +185,6 @@ async def get_ask_tab_content(request: Request):
         data=data,
         success_template="ask.html",
         error_template="ask.html",
-        temi=TEMI # Pass TEMI as a template argument
     )
 
 
@@ -270,12 +263,10 @@ async def passreset(request: Request, newpass: str = Form(...), newpass2: str = 
     return RedirectResponse(url="/profile", status_code=302)
 
 @app.post("/ask")
-async def ask_post(request: Request, question: str = Form(...), tema: str = Form(...)):
+async def ask_post(request: Request, question: str = Form(...), tema: str = Form(...), temi_json:str =Form(...)):
     if not question.strip():
         # Re-creating the themes list correctly for error rendering
-        listatemi = TEMI.copy()
-        if tema in listatemi: # Ensure the selected tema is not removed if it's the current one
-            listatemi.remove(tema)
+        listatemi=json.loads(temi_json)
         return templates.TemplateResponse("ask.html", {"request": request, "message": "La domanda non può essere vuota.", "temi": listatemi})
 
     data = {
@@ -284,11 +275,6 @@ async def ask_post(request: Request, question: str = Form(...), tema: str = Form
         "tab_creation": 0
     }
     
-    # We need to adjust 'temi' for the success message if needed
-    listatemi_for_response = TEMI.copy()
-    if tema in listatemi_for_response:
-        listatemi_for_response.remove(tema)
-
     return await make_backend_request(
         request,
         method="post",
@@ -296,7 +282,6 @@ async def ask_post(request: Request, question: str = Form(...), tema: str = Form
         data=data,
         success_template="ask.html",
         error_template="ask.html",
-        temi=listatemi_for_response # Pass the correct themes for success/error rendering
     )
 
 @app.post("/validate")
@@ -312,7 +297,6 @@ async def validate_post(request: Request, questionid: int = Form(...)): # Rename
         data=data,
         #success_template="validate.html",
         #error_template="ask.html", # Error redirect to ask.html
-        temi=TEMI # Ensure themes are available if it redirects to ask.html on error
     )
 
 @app.post("/best")
@@ -329,7 +313,6 @@ async def best_post(request: Request, questionid: int = Form(...), answerid: int
         data=data,
         #success_template="human.html",
         #error_template="ask.html", # Error redirect to ask.html
-        temi=TEMI # Ensure themes are available if it redirects to ask.html on error
     )
 
 @app.post("/human")
@@ -346,7 +329,6 @@ async def human_post(request: Request, human: int = Form(...), questionid: int =
         data=data,
         #success_template=None, # We'll redirect on success
         #error_template="ask.html", # Error redirect to ask.html
-        temi=TEMI # Ensure themes are available if it redirects to ask.html on error
     )
 
     #if isinstance(response, HTMLResponse): # If it's an error from make_backend_request

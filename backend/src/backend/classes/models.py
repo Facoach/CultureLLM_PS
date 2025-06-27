@@ -39,6 +39,7 @@ class ResponseAnswer(BaseModel):
 class ResponseAsk(BaseModel):
     message:str
     domande:List[list]
+    temi: List
 
 class ResponseProfile(BaseModel):
     username:str

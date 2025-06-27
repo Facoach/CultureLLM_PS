@@ -211,6 +211,7 @@ async def ask(domanda: RequestAsk, user_id: int = Depends(get_current_user_id), 
     :return: Oggetto ResponseAsk con un messaggio e l'elenco delle domande dell'utente.
     :raises HTTPException: Se la domanda è vuota o si verifica un errore DB.
     """
+    temi=[]
     msg = "" if domanda.tab_creation == 1 else "Domanda aggiunta con successo"
     if domanda.tab_creation==0:
         if not domanda.question.strip():
@@ -219,7 +220,8 @@ async def ask(domanda: RequestAsk, user_id: int = Depends(get_current_user_id), 
         try:
             # Inizia una transazione per assicurare l'atomicità delle operazioni
             execute_query_modify(db_conn, 'START TRANSACTION')
-            execute_query_modify(db_conn, f'insert into questions (payload,theme,author) values (%s, %s, %s);', [domanda.question, domanda.tema, user_id])
+            tema_id= execute_query_ask(db_conn, f'select id from themes where theme=%s;', [domanda.tema])
+            execute_query_modify(db_conn, f'insert into questions (payload,theme_id,author) values (%s, %s, %s);', [domanda.question, tema_id[1][0], user_id])
             execute_query_modify(db_conn, f'UPDATE users SET score = score+10 WHERE id=%s;', [user_id])
             execute_query_modify(db_conn, 'COMMIT')
         except mariadb.Error as e:
@@ -228,13 +230,19 @@ async def ask(domanda: RequestAsk, user_id: int = Depends(get_current_user_id), 
             msg= "Errore durante l'inserimento della domanda"
 
     try:
-        elenco = execute_query_ask(db_conn, f'select id, payload, theme, answered, checked from questions where author={user_id};')
+        elenco = execute_query_ask(db_conn, f'select questions.id, payload, theme, answered, checked from questions join themes on themes.id=theme_id where author=%s;', [user_id])
+        themes = execute_query_ask(db_conn, f'select theme from themes;')
     except mariadb.Error as e:
         print(f"Errore DB durante l'ottenimento delle domande: {e}")
         raise HTTPException(status_code=500, detail=f"Errore durante l'ottenimento delle domande: {e}")
+    themes.pop(0)
     elenco.pop(0) # Rimuove le intestazioni di colonna
-
-    return ResponseAsk(message= msg, domande=elenco)
+    #costruzione della lista di temi da dare in output, rimuovendo l'ultimo usato per dare varietà alle domande e non permettendo due domande di fila con lo stesso tema
+    for item in themes:
+        temi.append(item[0])
+    if domanda.tema in temi:
+        temi.remove(domanda.tema)
+    return ResponseAsk(message= msg, domande=elenco, temi=temi)
 
 
 @app.post("/validate")
@@ -307,21 +315,6 @@ async def human(data: RequestHuman, user_id: int = Depends(get_current_user_id),
 
     return ResponseHuman(message = "Grazie per aver partecipato, bye bye")
 
-####################################
-"""def get_question(user_id, theme, questionid):
-    try:
-        ret = execute_query_ask(db_connection.conn, f'SELECT id, payload, theme FROM questions WHERE author != {user_id} AND is_answering=0 AND answered = 0 AND theme!="{theme}" AND id != {questionid} ORDER BY id ASC LIMIT 10;')
-        ret.pop(0)
-
-        if not ret:  #è vuota
-            return ["", "Nessuna nuova domanda disponibile.", ""]
-
-        scelta=random.choice(ret)
-        aggiornamento = execute_query_modify(db_connection.conn, f'UPDATE questions SET is_answering=0 WHERE id={questionid};')
-        aggiornamento = execute_query_modify(db_connection.conn, f'UPDATE questions SET is_answering={user_id} WHERE id={scelta[0]};')
-    except mariadb.Error as e:
-        raise
-    return scelta"""
 
 def get_question(user_id: int, theme: str, questionid: int, db_conn: mariadb.Connection):
     """
@@ -338,10 +331,7 @@ def get_question(user_id: int, theme: str, questionid: int, db_conn: mariadb.Con
         # Seleziona 10 domande non ancora risposte e non in fase di risposta
         # escludendo quelle dell'autore e il tema e ID specifici.
         ret = execute_query_ask(
-            db_conn,
-            f'SELECT id, payload, theme FROM questions '
-            f'WHERE author != {user_id} AND is_answering=0 AND answered = 0 '
-            f'AND theme!="{theme}" AND id != {questionid} ORDER BY id ASC LIMIT 10;'
+            db_conn, f'SELECT questions.id, payload, theme FROM questions join themes on themes.id=theme_id WHERE author != %s AND is_answering=0 AND answered = 0 AND theme!=%s AND questions.id != %s ORDER BY id ASC LIMIT 10;', [user_id, theme, questionid]
         )
         ret.pop(0) # Rimuove le intestazioni di colonna
 
