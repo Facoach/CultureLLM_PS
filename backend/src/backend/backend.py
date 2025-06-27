@@ -211,6 +211,7 @@ async def ask(domanda: RequestAsk, user_id: int = Depends(get_current_user_id), 
     :return: Oggetto ResponseAsk con un messaggio e l'elenco delle domande dell'utente.
     :raises HTTPException: Se la domanda è vuota o si verifica un errore DB.
     """
+    msg = "" if domanda.tab_creation == 1 else "Domanda aggiunta con successo"
     if domanda.tab_creation==0:
         if not domanda.question.strip():
             raise HTTPException(status_code=400, detail="La domanda non può essere vuota.")
@@ -224,7 +225,7 @@ async def ask(domanda: RequestAsk, user_id: int = Depends(get_current_user_id), 
         except mariadb.Error as e:
             execute_query_modify(db_conn, 'ROLLBACK') # Effettua il rollback in caso di errore
             print(f"Errore DB durante l'inserimento della domanda: {e}")
-            raise HTTPException(status_code=500, detail=f"Errore durante l'inserimento della domanda: {e}")
+            msg= "Errore durante l'inserimento della domanda"
 
     try:
         elenco = execute_query_ask(db_conn, f'select id, payload, theme, answered, checked from questions where author={user_id};')
@@ -233,7 +234,6 @@ async def ask(domanda: RequestAsk, user_id: int = Depends(get_current_user_id), 
         raise HTTPException(status_code=500, detail=f"Errore durante l'ottenimento delle domande: {e}")
     elenco.pop(0) # Rimuove le intestazioni di colonna
 
-    msg = "" if domanda.tab_creation == 1 else "Domanda aggiunta con successo"
     return ResponseAsk(message= msg, domande=elenco)
 
 
@@ -375,6 +375,10 @@ async def answer(risposta: RequestAnswer, user_id: int = Depends(get_current_use
     :return: Oggetto ResponseAnswer con un messaggio e la prossima domanda.
     :raises HTTPException: Se la risposta è vuota o si verifica un errore DB.
     """
+    if risposta.tab_creation==1:
+        msg=""
+    else:
+        msg="Risposta aggiunta con successo"
     if risposta.tab_creation==0:
         if not risposta.answer.strip():
             raise HTTPException(status_code=400, detail="La risposta non può essere vuota.")
@@ -387,11 +391,7 @@ async def answer(risposta: RequestAnswer, user_id: int = Depends(get_current_use
         except mariadb.Error as e:
             execute_query_modify(db_conn, 'ROLLBACK')
             print(f"Errore DB durante l'inserimento della risposta: {e}")
-            raise HTTPException(status_code=500, detail=f"Errore durante l'inserimento della risposta: {e}")
-    if risposta.tab_creation==1:
-        msg=""
-    else:
-        msg="Risposta aggiunta con successo"
+            msg="Errore durante l'inserimento della risposta"
     # Passa la connessione del database alla funzione helper get_question
     return ResponseAnswer(message= msg, payload=get_question(user_id, risposta.tema, risposta.domandaid, db_conn))
     
