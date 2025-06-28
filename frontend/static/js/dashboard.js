@@ -168,15 +168,29 @@
                 const answerBlocks = [];
                 for(let i=0; i<4; i++) {
                     const answer = answers[i];
-                    answerBlocks.push(`
-                        <div class="answer-cell">
-                            <div class="answer-title">Risposta ${i+1}</div>
-                            <div class="answer-text">${answer ? answer[1] : "<em>In attesa...</em>"}</div>
-                        </div>
-                    `);
+                    // Controlla se la domanda è stata già valutata o se non c'è risposta,
+                    // in tal caso i bottoni sono disattivati
+                    if (checked == 1 || !answer) {
+                        answerBlocks.push(`
+                            <div class="answer-cell disabled">
+                                <div class="answer-title">Risposta ${i+1}</div>
+                                <div class="answer-text pending">${answer ? answer[1] : "<em>In attesa...</em>"}</div>
+                            </div>
+                        `);
+                    }
+                    // Se la risposta è ancora da valutare e ha ricevuto risposta
+                    // i bottoni sono attivi
+                    else {
+                        answerBlocks.push(`
+                            <button class="answer-cell" onclick="sendBest(${d.question[0]},${answer[0]})">
+                                <div class="answer-title">Risposta ${i + 1}</div>
+                                <div class="answer-text">${answer[1]}</div>
+                            </button>
+                        `);
+                    }
                 }
+                // Se è stata valutata mostra solo 
                 if(checked == 1) {
-                    // DOMANDA COMPLETATA
                     document.getElementById('chat-view').innerHTML = `
                         <div class="question-main">
                             <div class="main-question">${d.question[1]}</div>
@@ -206,13 +220,6 @@
                         <div class="answers-grid">
                             ${answerBlocks.join('')}
                         </div>
-                        <div class="answer-btns-row">
-                            ${answers.map((a, i) => `
-                                <button class="answer-best-btn" onclick="sendBest(${d.question[0]},${a[0]})">
-                                    Scegli come migliore (${i+1})
-                                </button>
-                            `).join('')}
-                        </div>
                     `;
                 }
             })
@@ -232,12 +239,22 @@
                 const answerBlocks = [];
                 for(let i=0; i<4; i++) {
                     const answer = answers[i];
-                    answerBlocks.push(`
-                        <div class="answer-cell">
-                            <div class="answer-title">Risposta ${i+1}</div>
-                            <div class="answer-text">${answer ? answer[1] : "<em>In attesa...</em>"}</div>
-                        </div>
-                    `);
+                    if (!answer) {
+                        answerBlocks.push(`
+                            <div class="answer-cell disabled">
+                                <div class="answer-title">Risposta ${i+1}</div>
+                                <div class="answer-text pending"><em>In attesa...</em></div>
+                            </div>
+                        `);
+                    }
+                    else {
+                        answerBlocks.push(`
+                            <button class="answer-cell" onclick="sendHuman(${answer[2]}, ${d.question[0]})">
+                                <div class="answer-title">Risposta ${i+1}</div>
+                                <div class="answer-text">${answer[1]}</div>
+                            </button>
+                        `);
+                    }
                 }
                 document.getElementById('chat-view').innerHTML = `
                     <div class="question-main">
@@ -246,13 +263,6 @@
                     </div>
                     <div class="answers-grid">
                         ${answerBlocks.join('')}
-                    </div>
-                    <div class="answer-btns-row">
-                        ${answers.map((a, i) => `
-                            <button class="answer-best-btn" onclick="sendHuman(${a[2]}, ${d.question[0]})">
-                                Scegli come umana (${i+1})
-                            </button>
-                        `).join('')}
                     </div>
                 `;
             })
