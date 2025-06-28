@@ -31,6 +31,7 @@ class RequestRegister(BaseModel):
     username:str
     password:str
     repeatpass:str
+    friend_code: str
 
 class ResponseAnswer(BaseModel):
     message:str
@@ -46,6 +47,7 @@ class ResponseProfile(BaseModel):
     score: int
     questions: int
     answers: int
+    friend_code: str
 
 class RequestValidate(BaseModel):
     questionid:int

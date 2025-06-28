@@ -218,14 +218,15 @@ async def get_answer_tab_content(request: Request):
     )
 
 @app.post("/register")
-async def register_post(request: Request, username: str = Form(...), password: str = Form(...), repeatpass: str = Form(...)):
+async def register_post(request: Request, username: str = Form(...), password: str = Form(...), repeatpass: str = Form(...), friend_code: str = Form("")):
     if not username.strip() or not password.strip():
         return templates.TemplateResponse("register.html", {"request": request, "message": "Username o password non validi."})
     
     data = {
         "username": username,
         "password": password,
-        "repeatpass" :repeatpass
+        "repeatpass": repeatpass,
+        "friend_code": friend_code
     }
     
     return await make_backend_request(

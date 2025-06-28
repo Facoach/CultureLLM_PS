@@ -13,8 +13,10 @@ CREATE TABLE IF NOT EXISTS users(
         username varchar(128) NOT NULL,
         password varchar(128) NOT NULL,
         score int NOT NULL DEFAULT 0,
+        friend_code varchar(128) NOT NULL,
         PRIMARY KEY(id),
         UNIQUE(username),
+        UNIQUE(friend_code),
         check(score>=0)
 
 );

@@ -190,8 +190,38 @@ def register(dati: RequestRegister, db_conn: mariadb.Connection = Depends(get_db
         if existing_user and existing_user[1:]: # Se ci sono righe oltre le intestazioni di colonna
             raise HTTPException(status_code=409, detail="Nome utente già registrato.")
 
+
+        # Genera codice amico nel formato 0000-0000-0000, max attempts serve per non avere un ciclo infinito
+        # in casi estremi (riprova al massimo 20 volte)
+        max_attempts = 20 
+        attempts = 0
+        code = ""
+
+        while attempts < max_attempts:
+            # Crea 3 blocchi di 4 cifre ez
+            blocchi = []
+            for i in range(3):
+                blocco = ''
+                for j in range(4):
+                    blocco += str(random.randint(0, 9))
+                blocchi.append(blocco)
+
+            ret = '-'.join(blocchi)
+
+            # Controlla se il codice esiste già nel db
+            result = execute_query_ask(db_conn, f"SELECT id FROM users WHERE friend_code=%s;", [ret])
+            if not result or len(result) == 1:
+                code = ret
+                break
+            attempts += 1
+        
+        # Controlla se esiste un utente con tale codice amico ed in tal caso aggiunge 50 punti all'utente che si è registrato
+        score = 0
+        ret = execute_query_ask(db_conn, f"SELECT username FROM users WHERE friend_code=%s;", [dati.friend_code])
+        if ret and len(ret)>1:
+            score = 50
         # Inserimento del nuovo utente
-        inserimento = execute_query_modify(db_conn, f'insert into users (username,password,score) values (%s, %s, 0);', [dati.username, dati.password])
+        inserimento = execute_query_modify(db_conn, f'insert into users (username,password,score,friend_code) values (%s, %s, %s, %s);', [dati.username, dati.password, score, code])
     except mariadb.Error as e:
         print(f"Errore DB durante la registrazione: {e}") # Logga l'errore per debugging
         raise HTTPException(status_code=500, detail=f"Errore durante la registrazione dell'utente.")
@@ -411,14 +441,14 @@ async def profile(user_id: int = Depends(get_current_user_id), db_conn: mariadb.
     :raises HTTPException: Se si verifica un errore DB.
     """
     try:
-        userdata=execute_query_ask(db_conn, f'select username, score from users where id=%s;', [user_id])
+        userdata=execute_query_ask(db_conn, f'select username, score, friend_code from users where id=%s;', [user_id])
         questnum=execute_query_ask(db_conn, f'select count(*) from questions where author=%s;', [user_id])
         ansnum=execute_query_ask(db_conn, f'select count(*) from answers where author=%s;', [user_id])
     except mariadb.Error as e:
         print(f"Errore DB nella raccolta dei dati del profilo: {e}")
         raise HTTPException(status_code=500, detail=f"Errore nella raccolta dei dati: {e}")
 
-    return ResponseProfile(username=userdata[1][0], score=userdata[1][1], questions=questnum[1][0], answers= ansnum[1][0])
+    return ResponseProfile(username=userdata[1][0], score=userdata[1][1], questions=questnum[1][0], answers= ansnum[1][0], friend_code= userdata[1][2])
 
 @app.post("/passreset")
 async def passreset(password: RequestPassreset, user_id: int = Depends(get_current_user_id), db_conn: mariadb.Connection = Depends(get_db_connection)):

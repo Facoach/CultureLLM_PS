@@ -6,8 +6,6 @@
     <title>Profilo</title>
     <link rel="stylesheet" href="/static/css/profile.css">
 </head>
-
-<script src="/static/js/ask.js"></script>
 <body>
     <nav class="navbar">
         <div class="nav-left">
@@ -28,7 +26,7 @@
             <div class="username">{{ username }}</div>
             <div class="invite-bar">
                 <div class="invite-label">Link Invito</div>
-                <div class="invite-code" id="invite-code">0000-0000-0000</div>
+                <div class="invite-code" id="invite-code">{{ friend_code }}</div>
                 <button class="copy-btn" type="button" onclick="copyInviteCode()">Copia</button>
             </div>
             
@@ -52,6 +50,6 @@
     </div>
     
 
-
+    <script src="/static/js/profile.js"></script>
 </body>
 </html>
