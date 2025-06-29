@@ -387,16 +387,14 @@ def get_question(user_id: int, theme: str, questionid: int, db_conn: mariadb.Con
     try:
         # Seleziona 10 domande non ancora risposte e non in fase di risposta
         # escludendo quelle dell'autore e il tema e ID specifici.
-        ret = execute_query_ask(
-            db_conn, f'SELECT questions.id, payload, theme FROM questions join themes on themes.id=theme_id WHERE author != %s AND is_answering=0 AND answered = 0 AND theme!=%s AND questions.id != %s ORDER BY id ASC LIMIT 10;', [user_id, theme, questionid]
-        )
+        ret = execute_query_ask(db_conn, f'SELECT questions.id, payload, theme FROM questions join themes on themes.id=theme_id WHERE author != %s AND is_answering=0 AND answered = 0 AND theme!=%s AND questions.id != %s ORDER BY id ASC LIMIT 10;', [user_id, theme, questionid])
         ret.pop(0) # Rimuove le intestazioni di colonna
 
         if not ret:
             # Se non ci sono domande disponibili, potresti voler gestire questo caso
             # ad esempio, restituendo un messaggio specifico o un'eccezione.
             # Per ora, si limita a sollevare un errore se random.choice riceve una lista vuota.
-            
+            execute_query_modify(db_conn, f'UPDATE questions SET is_answering=0 WHERE is_answering=%s;', [user_id]) 
             #raise HTTPException(status_code=404, detail="Nessuna nuova domanda disponibile.")
             return [0,"Non ci sono ulteriori domande a cui rispondere, vai a porne di nuove!", "placeholder"]
 
