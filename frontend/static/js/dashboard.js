@@ -164,43 +164,18 @@
             .then(r => r.json())
             .then(d => {
                 const answers = d.answers || [];
-                // Costruisci la matrice risposte (max 4, sempre 2x2)
-                const answerBlocks = [];
-                for(let i=0; i<4; i++) {
-                    const answer = answers[i];
-                    // Controlla se la domanda è stata già valutata o se non c'è risposta,
-                    // in tal caso i bottoni sono disattivati
-                    if (checked == 1 || !answer) {
-                        answerBlocks.push(`
-                            <div class="answer-cell disabled">
-                                <div class="answer-title">Risposta ${i+1}</div>
-                                <div class="answer-text pending">${answer ? answer[1] : "<em>In attesa...</em>"}</div>
-                            </div>
-                        `);
-                    }
-                    // Se la risposta è ancora da valutare e ha ricevuto risposta
-                    // i bottoni sono attivi
-                    else {
-                        answerBlocks.push(`
-                            <button class="answer-cell" onclick="sendBest(${d.question[0]},${answer[0]})">
-                                <div class="answer-title">Risposta ${i + 1}</div>
-                                <div class="answer-text">${answer[1]}</div>
-                            </button>
-                        `);
-                    }
-                }
                 // Se è stata valutata mostra solo 
-                if(checked == 1) {
+                if(d.checked == 1) {
                     document.getElementById('chat-view').innerHTML = `
                         <div class="question-main">
                             <div class="main-question">${d.question[1]}</div>
                         </div>
                         <div class="best-answer-block">
                             <div class="best-title">Risposta migliore</div>
-                            <div class="best-answer">${answers.length > 0 ? answers[0][1] : "<em>Non disponibile</em>"}</div>
+                            <div class="best-answer">${answers.length > 0 ? d.best_answer : "<em>Non disponibile</em>"}</div>
                         </div>
                     `;
-                } else if(answers.length === 0) {
+                } else if(answers.length < 4) {
                     // IN ATTESA RISPOSTE
                     document.getElementById('chat-view').innerHTML = `
                         <div class="question-main">
@@ -210,8 +185,18 @@
                             <span>In attesa delle risposte...</span>
                         </div>
                     `;
-                } else {
-                    // SCELTA RISPOSTA MIGLIORE
+                } 
+                else {
+                    const answerBlocks = [];
+                    for(let i=0; i<4; i++) {
+                        const answer = answers[i];
+                        answerBlocks.push(`
+                            <button class="answer-cell" onclick="sendBest(${d.question[0]},${answer[0]})">
+                                <div class="answer-title">Risposta ${i + 1}</div>
+                                <div class="answer-text">${answer[1]}</div>
+                            </button>
+                        `);
+                    }
                     document.getElementById('chat-view').innerHTML = `
                         <div class="question-main">
                             <div class="main-question">${d.question[1]}</div>

@@ -298,12 +298,18 @@ async def validate(domanda: RequestValidate, db_conn: mariadb.Connection = Depen
     try:
         payload = execute_query_ask(db_conn, f'select id, payload from questions where id=%s;', [domanda.questionid])
         risposte = execute_query_ask(db_conn, f'select id, payload from answers where question=%s;', [domanda.questionid])
+        check = execute_query_ask(db_conn, f'select checked from questions where id=%s;', [domanda.questionid])
+        best = execute_query_ask(db_conn, f'select payload from answers where question=%s and best=1;', [domanda.questionid])
+        if len(best) > 1:
+            best = best[1][0]
+        else:
+            best = ""
     except mariadb.Error as e:
         print(f"Errore DB durante l'ottenimento di domanda/risposte per validazione: {e}")
         raise HTTPException(status_code=500, detail=f"Errore durante l'ottenimento della domanda: {e}")
 
     risposte.pop(0) # Rimuove le intestazioni di colonna
-    return ResponseValidate(message = "Scegli la risposta che ti sembra migliore", question=payload[1], answers=risposte)
+    return ResponseValidate(message = "Scegli la risposta che ti sembra migliore", question=payload[1], answers=risposte, checked=check[1][0], best_answer=best)
 
 @app.post("/best")
 async def best(data: RequestBest, db_conn: mariadb.Connection = Depends(get_db_connection)):
@@ -329,12 +335,13 @@ async def best(data: RequestBest, db_conn: mariadb.Connection = Depends(get_db_c
     try:
         payload = execute_query_ask(db_conn, f'select id, payload from questions where id=%s;', [data.questionid])
         risposte = execute_query_ask(db_conn, f'select id, payload, author from answers where question=%s;', [data.questionid])
+        check = execute_query_ask(db_conn, f'select checked from questions where id=%s;', [data.questionid])
     except mariadb.Error as e:
         print(f"Errore DB durante l'ottenimento di domanda/risposte dopo la selezione della migliore: {e}")
         raise HTTPException(status_code=500, detail=f"Errore durante l'ottenimento della domanda: {e}")
 
     risposte.pop(0)
-    return ResponseValidate(message = "Scegli la risposta che credi sia stata data da un umano", question=payload[1], answers=risposte)
+    return ResponseValidate(message = "Scegli la risposta che credi sia stata data da un umano", question=payload[1], answers=risposte, checked=check[1][0], best_answer="")
 
 @app.post("/human")
 async def human(data: RequestHuman, user_id: int = Depends(get_current_user_id), db_conn: mariadb.Connection = Depends(get_db_connection)):

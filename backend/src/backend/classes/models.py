@@ -56,6 +56,8 @@ class ResponseValidate(BaseModel):
     message:str
     question:List
     answers:List[list]
+    checked: bool
+    best_answer: str
 
 class RequestBest(BaseModel):
     questionid:int
