@@ -71,12 +71,9 @@ def execute_query_modify(connection:mariadb.Connection,query:str, params: list =
             cursor.execute(query) # Esecuzione della query senza parametri 
         connection.commit()
     except mariadb.Error as e:
-        if (e.errno==1062): #controlla se l'errore è di duplicate entry (errno 1062)
-            results ="duplicato"
-        else:
-            print(f"Errore durante l'esecuzione della query: {e}")
-            connection.rollback()  # Annulla le modifiche in caso di errore
-            raise
+        print(f"Errore durante l'esecuzione della query: {e}")
+        connection.rollback()  # Annulla le modifiche in caso di errore
+        raise
     finally:
         if cursor:  # Verifica se il cursore è stato creato
             cursor.close()

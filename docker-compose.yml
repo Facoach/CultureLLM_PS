@@ -18,6 +18,15 @@ services:
       timeout: 5s
       retries: 10
 
+  ollama:
+    image: ollama/ollama
+    container_name: ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ./ollama_data:/root/.ollama
+    restart: unless-stopped
+
   backend:
     build: 
       context: .
@@ -28,6 +37,8 @@ services:
       - E_HOST_DB=mariadb-cinema
       - E_PORT_DB=3306
     depends_on:
+      ollama:
+        condition: service_started
       mariadb-cinema:
         condition: service_healthy
     restart: always
@@ -35,7 +46,7 @@ services:
       test: ["CMD", "curl", "-f", "http://localhost:8003/health"]
       interval: 10s
       timeout: 5s
-      retries: 5
+      retries: 10
     volumes:
     - ./backend:/app/src/backend
 

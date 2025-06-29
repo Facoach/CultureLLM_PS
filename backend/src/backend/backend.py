@@ -4,6 +4,7 @@ from typing import Dict, Optional, List
 from classes.models import ResponseHuman, RequestLogin, RequestRegister, ResponseLogin, RequestAsk, RequestAnswer, ResponseAsk, ResponseAnswer, ResponseProfile, RequestValidate, ResponseLeaderboard, ResponseValidate, RequestHuman, RequestBest, RequestPassreset
 from classes.database_connection import DatabaseConnection
 from database_management.execute_query import execute_query_modify, execute_query_ask
+from ai_management.ai_answers import process_ai_response 
 import requests
 import mariadb
 import os
@@ -51,6 +52,9 @@ def decode_access_token(token: str):
 # Parametri globali per la connessione al database
 HOST_DB = os.getenv("E_HOST_DB", "localhost")
 PORT_DB = os.getenv("E_PORT_DB", "3307")
+#metterli da os
+MODEL_NAME = "gemma3:1b"
+OLLAMA_URL = "http://ollama:11434/api"
 
 # Inizializza il gestore del connection pool
 # Il pool sarà inizializzato formalmente all'evento 'startup' di FastAPI
@@ -148,7 +152,7 @@ async def login(dati: RequestLogin, response: Response, db_conn: mariadb.Connect
         # Errore generico del DB, non dare dettagli specifici sulla causa al client.
         raise HTTPException(status_code=500, detail="Errore del server durante il login.")
 
-    if not utente_raw or not utente_raw[1:]: # utente_raw[0] contiene i nomi delle colonne
+    if not utente_raw or not utente_raw[1:] or utente_raw[1][0]==-1: # utente_raw[0] contiene i nomi delle colonne, e non si può accedere con l'utente id=-1, che è l'ia
         raise HTTPException(status_code=401, detail="Nome utente o password errati.")
 
     user_id = utente_raw[1][0]
@@ -254,11 +258,18 @@ async def ask(domanda: RequestAsk, user_id: int = Depends(get_current_user_id), 
             execute_query_modify(db_conn, f'insert into questions (payload,theme_id,author) values (%s, %s, %s);', [domanda.question, tema_id[1][0], user_id])
             execute_query_modify(db_conn, f'UPDATE users SET score = score+10 WHERE id=%s;', [user_id])
             execute_query_modify(db_conn, 'COMMIT')
+            t = threading.Thread(target=process_ai_response, args=(domanda.question, db_pool_manager)) # Passa l'istanza del pool
+            t.start()
         except mariadb.Error as e:
+            if (e.errno==1062): #controlla se l'errore è di duplicate entry (errno 1062)
+                msg ="Questa domanda è stata già posta da qualcuno, e cerchiamo di averne di più varie possibili!\n Poni un'altra domanda!"
+            else:
+                msg= "Errore durante l'inserimento della domanda"
             execute_query_modify(db_conn, 'ROLLBACK') # Effettua il rollback in caso di errore
             print(f"Errore DB durante l'inserimento della domanda: {e}")
-            msg= "Errore durante l'inserimento della domanda"
 
+
+    
     try:
         elenco = execute_query_ask(db_conn, f'select questions.id, payload, theme, answered, checked from questions join themes on themes.id=theme_id where author=%s;', [user_id])
         themes = execute_query_ask(db_conn, f'select theme from themes;')
@@ -424,7 +435,7 @@ async def leaderboard(db_conn: mariadb.Connection = Depends(get_db_connection)):
     :raises HTTPException: Se si verifica un errore DB.
     """
     try:
-        leaderboard_data = execute_query_ask(db_conn, f'select username, score from users order by score DESC;')
+        leaderboard_data = execute_query_ask(db_conn, f'select username, score from users where username != "IA" order by score DESC;') #non mostriamo l'ia, sarebbe uno svantaggio scorretto mettere gli utenti a confronto con l'ia
     except mariadb.Error as e:
         print(f"Errore DB durante la formazione della Leaderboard: {e}")
         raise HTTPException(status_code=500, detail=f"Errore nella formazione della Leaderboard: {e}")
@@ -512,6 +523,31 @@ async def check_new_answers(user_id: int = Depends(get_current_user_id), db_conn
 
 
 
+
+@app.on_event("startup")
+def pull() -> None:
+    """Avvia, se non è presente, il download del modello di Ollama"""
+    modello=False
+    try:
+        response= requests.get(f"{OLLAMA_URL}/tags")
+        response.raise_for_status()
+        data=response.json()
+        if "models" in data:
+            for model in data["models"]:
+                if model["name"] == MODEL_NAME:
+                    modello=True
+    except requests.exceptions.RequestException as e:
+        print(f"Errore durante la comunicazione con l'api di Ollama: {e}")
+        raise
+    if not modello:
+        data={"model": MODEL_NAME
+                }
+        try:
+            response= requests.post(f"{OLLAMA_URL}/pull", json=data)
+            response.raise_for_status()
+        except requests.exceptions.RequestException as e:
+            print(f"Errore durante la comunicazione con l'api di Ollama: {e}")
+            raise
 
 @app.on_event("startup")
 def connect_mariadb_pool() -> None:

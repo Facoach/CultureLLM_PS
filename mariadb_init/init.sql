@@ -30,6 +30,7 @@ CREATE TABLE IF NOT EXISTS questions(
         is_answering boolean DEFAULT 0,
         author int NOT NULL,
         PRIMARY KEY(id),
+        UNIQUE(payload),
         FOREIGN KEY (author) REFERENCES users(id),
         FOREIGN KEY (theme_id) REFERENCES themes(id)
 
@@ -65,3 +66,6 @@ INSERT INTO themes (theme) VALUES
 ("Scienza e tecnologia italiana"),
 ("Sport italiano"),
 ("Storia italiana");
+
+INSERT INTO users (id, username, password, score, friend_code) VALUES
+(-1, "IA", "ia", 0, 1);
