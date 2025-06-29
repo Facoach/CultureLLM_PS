@@ -251,23 +251,32 @@ async def ask(domanda: RequestAsk, user_id: int = Depends(get_current_user_id), 
         if not domanda.question.strip():
             raise HTTPException(status_code=400, detail="La domanda non può essere vuota.")
 
-        try:
-            # Inizia una transazione per assicurare l'atomicità delle operazioni
-            execute_query_modify(db_conn, 'START TRANSACTION')
-            tema_id= execute_query_ask(db_conn, f'select id from themes where theme=%s;', [domanda.tema])
-            execute_query_modify(db_conn, f'insert into questions (payload,theme_id,author) values (%s, %s, %s);', [domanda.question, tema_id[1][0], user_id])
-            execute_query_modify(db_conn, f'UPDATE users SET score = score+10 WHERE id=%s;', [user_id])
-            execute_query_modify(db_conn, 'COMMIT')
-            t = threading.Thread(target=process_ai_response, args=(domanda.question, db_pool_manager)) # Passa l'istanza del pool
-            t.start()
-        except mariadb.Error as e:
-            if (e.errno==1062): #controlla se l'errore è di duplicate entry (errno 1062)
-                msg ="Questa domanda è stata già posta da qualcuno, e cerchiamo di averne di più varie possibili!\n Poni un'altra domanda!"
-            else:
-                msg= "Errore durante l'inserimento della domanda"
-            execute_query_modify(db_conn, 'ROLLBACK') # Effettua il rollback in caso di errore
-            print(f"Errore DB durante l'inserimento della domanda: {e}")
+        #test per vedre se la domanda è coerente col tema
+        data={"model": MODEL_NAME, "messages":[{"role":"user", "content":f"ritieni che la domanda {domanda.question} sia coerente col tema {domanda.tema}? Rispondi UNICAMENTE con un voto da 1 a 10 per la coerenza, senza spiegazioni aggiuntive o caratteri non numerici"}], "stream":False}
+        response= requests.post(f"{OLLAMA_URL}/chat", json=data)
+        response.raise_for_status()
+        ollama_response = response.json().get("message", "").get("content", "")
+        print(ollama_response)
 
+        if int(ollama_response.strip())>=5:
+            try:
+                # Inizia una transazione per assicurare l'atomicità delle operazioni
+                execute_query_modify(db_conn, 'START TRANSACTION')
+                tema_id= execute_query_ask(db_conn, f'select id from themes where theme=%s;', [domanda.tema])
+                execute_query_modify(db_conn, f'insert into questions (payload,theme_id,author) values (%s, %s, %s);', [domanda.question[:255], tema_id[1][0], user_id])
+                execute_query_modify(db_conn, f'UPDATE users SET score = score+10 WHERE id=%s;', [user_id])
+                execute_query_modify(db_conn, 'COMMIT')
+                t = threading.Thread(target=process_ai_response, args=(domanda.question, db_pool_manager)) # Passa l'istanza del pool
+                t.start()
+            except mariadb.Error as e:
+                if (e.errno==1062): #controlla se l'errore è di duplicate entry (errno 1062)
+                    msg ="Questa domanda è stata già posta da qualcuno, e cerchiamo di averne di più varie possibili!\n Poni un'altra domanda!"
+                else:
+                    msg= "Errore durante l'inserimento della domanda"
+                execute_query_modify(db_conn, 'ROLLBACK') # Effettua il rollback in caso di errore
+                print(f"Errore DB durante l'inserimento della domanda: {e}")
+        else:
+            msg= "l'IA ritiene che la domanda non sia coerente con il tema"
 
     
     try:
@@ -423,7 +432,7 @@ async def answer(risposta: RequestAnswer, user_id: int = Depends(get_current_use
 
         try:
             execute_query_modify(db_conn, 'START TRANSACTION')
-            execute_query_modify(db_conn, f'insert into answers (payload,question,author) values (%s, %s, %s);', [risposta.answer, risposta.domandaid, user_id])
+            execute_query_modify(db_conn, f'insert into answers (payload,question,author) values (%s, %s, %s);', [risposta.answer[:255], risposta.domandaid, user_id])
             execute_query_modify(db_conn, f'UPDATE questions SET answered=1 WHERE id=%s;', [risposta.domandaid])
             execute_query_modify(db_conn, 'COMMIT')
         except mariadb.Error as e:

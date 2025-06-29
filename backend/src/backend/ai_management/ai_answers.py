@@ -20,6 +20,8 @@ def process_ai_response(question_payload: str,  db_pool_manager : DatabaseConnec
         try:
             # Acquisisce una connessione dal pool specificamente per questo thread
             # Il db_pool_manager_instance è l'oggetto passato dal main thread
+
+            #spostare dopo la richiesta alla ia per avere la connessione occupata per meno tempo
             conn = db_pool_manager.get_connection() 
             print(f"[{thread_name}] Connessione DB acquisita dal pool per la task {i}.")
 
@@ -29,7 +31,7 @@ def process_ai_response(question_payload: str,  db_pool_manager : DatabaseConnec
             ollama_response = response.json().get("message", "").get("content", "")
             print(ollama_response)
             iddomanda= execute_query_ask(conn, f'select id from questions where payload=%s;', [question_payload])
-            execute_query_modify(conn, f'insert into answers (payload,question,author) values (%s, %s, %s);', [ollama_response, iddomanda[1][0], -1])
+            execute_query_modify(conn, f'insert into answers (payload,question,author) values (%s, %s, %s);', [ollama_response[:255], iddomanda[1][0], -1])
         except requests.exceptions.RequestException as e:
             print(f"[{thread_name}] Errore durante la richiesta all'ia nella task {i}: {e}")
         except mariadb.Error as e:
