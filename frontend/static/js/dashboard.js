@@ -26,26 +26,6 @@
                 }
             });
 
-            //POPUP
-            // Seleziona tutti i form con la classe 'answer-form'
-            const forms = document.querySelectorAll('.answer-form');
-
-            forms.forEach(form => {
-                form.addEventListener('submit', function(event) {
-                    // Impedisci l'invio immediato del form
-                    event.preventDefault();
-
-                    // Mostra il popup
-                    alert("Grazie per aver risposto!\nDei punti verranno assegnati a chi ha scritto la risposta, se è stata opera di un'umano. Riesci ad indovinare quale delle risposte era data da una persona?");
-
-                    // Invia il form dopo un breve ritardo (opzionale, per dare tempo all'utente di vedere il popup)
-                    // Puoi regolare il ritardo (in millisecondi) o rimuoverlo se preferisci che il form venga inviato subito dopo il popup
-                    setTimeout(() => {
-                        this.submit();
-                    }, 100); // 100 millisecondi di ritardo
-                });
-            });
-            //FINE POPUP
         
         }
 
@@ -88,6 +68,13 @@
 
                 const updatedHtml = await response.text();
 
+                //controllo se la redirect è un login (la sessione è scaduta), in quel caso non va impostato come innerthml
+                if (updatedHtml.includes('id="login-form-container"') || response.url.includes('/directlogin')) {
+                    console.log("Rilevata pagina di login. Reindirizzamento...");
+                    window.location.href = '/directlogin?message=Token scaduto o assente'; // Reindirizza l'intera pagina
+                    return; // Interrompi l'esecuzione della funzione
+                }
+
                 if (tabContentContainer) {
                     tabContentContainer.innerHTML = updatedHtml;
                     initializeTabForms();
@@ -127,6 +114,14 @@
                         throw new Error(`HTTP error! status: ${response.status}`);
                     }
                     const htmlContent = await response.text();
+
+                    //controllo se la redirect è un login (la sessione è scaduta), in quel caso non va impostato come innerthml
+                    if (htmlContent.includes('id="login-form-container"') || response.url.includes('/directlogin')) {
+                        console.log("Rilevata pagina di login durante il caricamento del tab. Reindirizzamento...");
+                        window.location.href = '/directlogin?message=Token scaduto o assente';
+                        return; // Interrompi l'esecuzione della funzione
+                    }
+
                     contentContainer.innerHTML = htmlContent;
                 } catch (error) {
                     console.error(`Errore nel caricamento del tab ${tabName}:`, error);
@@ -161,7 +156,14 @@
                 headers: {'Content-Type':'application/x-www-form-urlencoded'},
                 body: `questionid=${questionId}`
             })
-            .then(r => r.json())
+            .then(r => {
+                // Anche qui, verifica la risposta per un potenziale reindirizzamento
+                if (r.url.includes('/directlogin')) {
+                    window.location.href = '/directlogin?message=Token scaduto o assente';
+                    return;
+                }
+                return r.json();
+            })
             .then(d => {
                 const answers = d.answers || [];
                 // Lista che contiene gli id nell'ordine in cui si trovano in answers dopo lo shuffle, con successivo encoding
@@ -221,7 +223,13 @@
                 headers: {'Content-Type':'application/x-www-form-urlencoded'},
                 body: `questionid=${questionId}&answerid=${answerId}`
             })
-            .then(r => r.json())
+            .then(r => {
+                if (r.url.includes('/directlogin')) {
+                    window.location.href = '/directlogin?message=Token scaduto o assente';
+                    return;
+                }
+                return r.json();
+            })
             .then(d => {
                 const answers = d.answers || [];
                 // Parsa la lista degli id in ordine ad un array
@@ -274,7 +282,13 @@
                 headers: {'Content-Type':'application/x-www-form-urlencoded'},
                 body: `human=${humanId}&questionid=${questionId}`
             })
-            .then(r => r.json())
+            .then(r => {
+                if (r.url.includes('/directlogin')) {
+                    window.location.href = '/directlogin?message=Token scaduto o assente';
+                    return;
+                }
+                return r.json();
+            })
             .then(d => {
                 document.getElementById('chat-view').innerHTML = `
                     <div class="waiting-message">
@@ -287,7 +301,13 @@
         
         function checkNewAnswers() {
             fetch('/check_new_answers')
-            .then(res => res.json())
+            .then(res => {
+                if (res.url.includes('/directlogin')) {
+                    window.location.href = '/directlogin?message=Token scaduto o assente';
+                    return;
+                }
+                return res.json();
+            })
             .then(data => {
                 // Scorre tutti i bottoni delle domande in lavorazione
                 document.querySelectorAll('.question-card.in-progress .question-title').forEach(button => {
@@ -320,6 +340,14 @@
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
                 const htmlContent = await response.text();
+
+                //controllo se la redirect è un login (la sessione è scaduta), in quel caso non va impostato come innerthml
+                if (htmlContent.includes('id="login-form-container"') || response.url.includes('/directlogin')) {
+                    console.log("Rilevata pagina di login durante l'aggiornamento della leaderboard. Reindirizzamento...");
+                    window.location.href = '/directlogin?message=Token scaduto o assente';
+                    return;
+                }
+
                 leaderboardContainer.innerHTML = htmlContent;
                 // Una volta aggiornato il contenuto, se ci fossero form al suo interno,
                 // è buona pratica reinizializzare i loro listener.

@@ -79,8 +79,8 @@ async def make_backend_request(
         return retrieved_data # Return data if no template specified for success
 
     except requests.exceptions.HTTPError as e:
-        #if e.response.status_code==401:
-            #return RedirectResponse(url=redirect_url_on_unauthorized+"?message=Token scaduto o assente", status_code=302)
+        if e.response.status_code==401:
+            return RedirectResponse(url=redirect_url_on_unauthorized+"?message=Token scaduto o assente", status_code=302)
         detail = "Si è verificato un errore durante la richiesta al backend."
         if e.response is not None:
             try:
