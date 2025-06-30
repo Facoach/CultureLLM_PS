@@ -11,6 +11,7 @@ Dopodichè, per l'esecuzione del progetto, aprire il terminale, ed eseguire
  - cd <percorso_verso_la_cartella>
  - mkdir ollama_data
  - mkdir mariadb_data
+ - chmod 0777 mariadb_data
  - docker-compose up --build -d (Al primo avvio può essere richiesto fino a 1 o 2 minuti)
 
 L'applicazione sarà accessibile tramite browser dalla pagina http://localhost:8001.

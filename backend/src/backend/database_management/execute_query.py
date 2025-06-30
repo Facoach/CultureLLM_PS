@@ -33,7 +33,6 @@ def execute_query_ask(connection:mariadb.Connection,query:str, params: list = No
         final.append(colonne)
         for tupla in result:
             final.append(tupla)
-        connection.commit()
     except mariadb.Error as e:
         print(f"Errore durante l'esecuzione della query: {e}")
         raise
@@ -69,10 +68,8 @@ def execute_query_modify(connection:mariadb.Connection,query:str, params: list =
             cursor.execute(query, params) # Esecuzione della query con parametri
         else:
             cursor.execute(query) # Esecuzione della query senza parametri 
-        connection.commit()
     except mariadb.Error as e:
         print(f"Errore durante l'esecuzione della query: {e}")
-        connection.rollback()  # Annulla le modifiche in caso di errore
         raise
     finally:
         if cursor:  # Verifica se il cursore è stato creato

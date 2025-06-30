@@ -225,8 +225,11 @@ def register(dati: RequestRegister, db_conn: mariadb.Connection = Depends(get_db
         if ret and len(ret)>1:
             score = 50
         # Inserimento del nuovo utente
+        transazione = execute_query_modify(db_conn, 'START TRANSACTION')
         inserimento = execute_query_modify(db_conn, f'insert into users (username,password,score,friend_code) values (%s, %s, %s, %s);', [dati.username, dati.password, score, code])
+        transazione = execute_query_modify(db_conn, 'COMMIT')
     except mariadb.Error as e:
+        transazione = execute_query_modify(db_conn, 'ROLLBACK')
         print(f"Errore DB durante la registrazione: {e}") # Logga l'errore per debugging
         raise HTTPException(status_code=500, detail=f"Errore durante la registrazione dell'utente.")
     except HTTPException:
@@ -366,8 +369,11 @@ async def human(data: RequestHuman, user_id: int = Depends(get_current_user_id),
     """
     if data.human > 0:
         try:
-            execute_query_modify(db_conn, f'UPDATE users SET score=score+10 WHERE id=%s;', [user_id])
+            transazione = execute_query_modify(db_conn, 'START TRANSACTION')
+            punteggio= execute_query_modify(db_conn, f'UPDATE users SET score=score+10 WHERE id=%s;', [user_id])
+            transazione = execute_query_modify(db_conn, 'COMMIT')
         except mariadb.Error as e:
+            transazione = execute_query_modify(db_conn, 'ROLLBACK')
             print(f"Errore DB durante l'aggiornamento del punteggio per il voto umano: {e}")
             raise HTTPException(status_code=500, detail=f"Errore durante l'ottenimento della domanda: {e}")
 
@@ -392,11 +398,14 @@ def get_question(user_id: int, theme: str, questionid: int, db_conn: mariadb.Con
         ret.pop(0) # Rimuove le intestazioni di colonna
 
         if not ret:
-            # Se non ci sono domande disponibili, potresti voler gestire questo caso
-            # ad esempio, restituendo un messaggio specifico o un'eccezione.
-            # Per ora, si limita a sollevare un errore se random.choice riceve una lista vuota.
-            execute_query_modify(db_conn, f'UPDATE questions SET is_answering=0 WHERE is_answering=%s;', [user_id]) 
-            #raise HTTPException(status_code=404, detail="Nessuna nuova domanda disponibile.")
+            try:
+                # Se non ci sono domande disponibili riceve una lista vuota.
+                transazione = execute_query_modify(db_conn, 'START TRANSACTION')
+                reset = execute_query_modify(db_conn, f'UPDATE questions SET is_answering=0 WHERE is_answering=%s;', [user_id]) 
+                transazione = execute_query_modify(db_conn, 'COMMIT')
+            except mariadb.Error as e:
+                transazione = execute_query_modify(db_conn, 'ROLLBACK')
+                print(f"Errore DB: {e}")
             return [0,"Non ci sono ulteriori domande a cui rispondere, vai a porne di nuove!", "placeholder"]
 
         scelta=random.choice(ret)
@@ -487,14 +496,11 @@ async def passreset(password: RequestPassreset, user_id: int = Depends(get_curre
     :raises HTTPException: Se si verifica un errore DB.
     """
     try:
-        # Esempio di come usare una query parametrizzata (molto più sicuro!):
-        # cursor = db_conn.cursor()
-        # cursor.execute("UPDATE users SET password=? WHERE id=?", (password.newpass, user_id))
-        # db_conn.commit()
-        # cursor.close()
-        # Per semplicità, mantengo la f-string come nel codice originale, ma con un avviso.
+        transazione = execute_query_modify(db_conn, 'START TRANSACTION')
         aggiornamento = execute_query_modify(db_conn, f'UPDATE users SET password=%s WHERE id=%s;', [password.newpass, user_id])
+        transazione = execute_query_modify(db_conn, 'COMMIT')
     except mariadb.Error as e:
+        transazione = execute_query_modify(db_conn, 'ROLLBACK')
         print(f"Errore DB nella modifica della password: {e}")
         raise HTTPException(status_code=500, detail=f"Errore nella modifica della password: {e}")
 
@@ -513,8 +519,11 @@ async def logout(response: Response, user_id: int = Depends(get_current_user_id)
     """
     try:
         # Aggiorna lo stato delle domande che l'utente stava rispondendo
+        transazione = execute_query_modify(db_conn, 'START TRANSACTION')
         execute_query_modify(db_conn, f'UPDATE questions SET is_answering=0 WHERE is_answering=%s;', [user_id])
+        transazione = execute_query_modify(db_conn, 'COMMIT')
     except mariadb.Error as e:
+        transazione = execute_query_modify(db_conn, 'ROLLBACK')
         print(f"Errore DB durante l'aggiornamento dello stato delle domande al logout: {e}")
         raise HTTPException(status_code=500, detail="Errore durante l'aggiornamento dello stato delle domande.")
 
@@ -526,7 +535,6 @@ async def logout(response: Response, user_id: int = Depends(get_current_user_id)
 @app.get("/check_new_answers")
 async def check_new_answers(user_id: int = Depends(get_current_user_id), db_conn: mariadb.Connection = Depends(get_db_connection)):
     try:
-        #questions = execute_query_ask(db_conn, f"SELECT id FROM questions WHERE author=%s AND answered=1 AND checked=0;", [user_id])
         questions = execute_query_ask(db_conn, f"SELECT distinct questions.id FROM questions JOIN answers on (questions.id=answers.question) WHERE questions.author=%s AND questions.answered=1 AND questions.checked=0 GROUP BY questions.id HAVING count(answers.id)>=4;", [user_id])
     except mariadb.Error as e:
         raise HTTPException(status_code=500, detail=str(e))
