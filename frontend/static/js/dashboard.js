@@ -164,6 +164,9 @@
             .then(r => r.json())
             .then(d => {
                 const answers = d.answers || [];
+                // Lista che contiene gli id nell'ordine in cui si trovano in answers dopo lo shuffle, con successivo encoding
+                let id_order = answers.map(x => x[0]);
+                const id_order_json = encodeURIComponent(JSON.stringify(id_order));
                 // Se è stata valutata mostra solo 
                 if(d.checked == 1) {
                     document.getElementById('chat-view').innerHTML = `
@@ -191,7 +194,7 @@
                     for(let i=0; i<4; i++) {
                         const answer = answers[i];
                         answerBlocks.push(`
-                            <button class="answer-cell" onclick="sendBest(${d.question[0]},${answer[0]})">
+                            <button class="answer-cell" onclick="sendBest(${d.question[0]},${answer[0]},'${id_order_json}')">
                                 <div class="answer-title">Risposta ${i + 1}</div>
                                 <div class="answer-text">${answer[1]}</div>
                             </button>
@@ -212,7 +215,7 @@
         }
         
         // Dopo aver scelto la migliore, scegli la risposta umana (stesso layout)
-        function sendBest(questionId, answerId) {
+        function sendBest(questionId, answerId, id_order_json) {
             fetch('/best', {
                 method: 'POST',
                 headers: {'Content-Type':'application/x-www-form-urlencoded'},
@@ -221,6 +224,13 @@
             .then(r => r.json())
             .then(d => {
                 const answers = d.answers || [];
+                // Parsa la lista degli id in ordine ad un array
+                let id_order = [];
+                if (typeof id_order_json === "string") {
+                    id_order = JSON.parse(decodeURIComponent(id_order_json));
+                }
+                // Sorta answers seguendo l'ordine degli id nella lista in_order (per mantenere lo shuffle)
+                answers.sort((a, b) => id_order.indexOf(a[0]) - id_order.indexOf(b[0]));
                 const answerBlocks = [];
                 for(let i=0; i<4; i++) {
                     const answer = answers[i];
@@ -234,10 +244,12 @@
                     }
                     else {
                         answerBlocks.push(`
-                            <button class="answer-cell" onclick="sendHuman(${answer[2]}, ${d.question[0]})">
-                                <div class="answer-title">Risposta ${i+1}</div>
-                                <div class="answer-text">${answer[1]}</div>
-                            </button>
+                            <form action="/get_tab_content/ask" method="GET">
+                                <button type= "submit" class="answer-cell" onclick="sendHuman(${answer[2]}, ${d.question[0]})">
+                                    <div class="answer-title">Risposta ${i+1}</div>
+                                    <div class="answer-text">${answer[1]}</div>
+                                </button>
+                            </form>
                         `);
                     }
                 }

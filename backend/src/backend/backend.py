@@ -318,6 +318,7 @@ async def validate(domanda: RequestValidate, db_conn: mariadb.Connection = Depen
         raise HTTPException(status_code=500, detail=f"Errore durante l'ottenimento della domanda: {e}")
 
     risposte.pop(0) # Rimuove le intestazioni di colonna
+    random.shuffle(risposte)
     return ResponseValidate(message = "Scegli la risposta che ti sembra migliore", question=payload[1], answers=risposte, checked=check[1][0], best_answer=best)
 
 @app.post("/best")
@@ -525,7 +526,8 @@ async def logout(response: Response, user_id: int = Depends(get_current_user_id)
 @app.get("/check_new_answers")
 async def check_new_answers(user_id: int = Depends(get_current_user_id), db_conn: mariadb.Connection = Depends(get_db_connection)):
     try:
-        questions = execute_query_ask(db_conn, f"SELECT id FROM questions WHERE author=%s AND answered=1 AND checked=0;", [user_id])
+        #questions = execute_query_ask(db_conn, f"SELECT id FROM questions WHERE author=%s AND answered=1 AND checked=0;", [user_id])
+        questions = execute_query_ask(db_conn, f"SELECT distinct questions.id FROM questions JOIN answers on (questions.id=answers.question) WHERE questions.author=%s AND questions.answered=1 AND questions.checked=0 GROUP BY questions.id HAVING count(answers.id)>=4;", [user_id])
     except mariadb.Error as e:
         raise HTTPException(status_code=500, detail=str(e))
     

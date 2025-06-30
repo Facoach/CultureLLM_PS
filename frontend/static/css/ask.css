@@ -4,6 +4,13 @@ html, body {
     padding: 0;
     background-color: #37374F;
 }
+/**/
+form {
+    display: contents; /* fa sì che il form NON influisca sul layout */
+    margin: 0;
+    padding: 0;
+}
+
 
 /* ========== LAYOUT ========== */
 .ask-layout {
@@ -338,6 +345,7 @@ html, body {
     outline: none;
     white-space: normal;
     word-break: break-word;
+    border-radius: 10px;
 }
 .answer-cell:hover:not(.disabled) {
     background: #515179;
