@@ -262,6 +262,7 @@
                         ${answerBlocks.join('')}
                     </div>
                 `;
+                initializeTabForms();
             })
             .catch(err => console.error(err));
         }
