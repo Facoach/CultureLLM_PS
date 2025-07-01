@@ -10,10 +10,11 @@ lista_livelli =["rispondi come risponderebbe uno studente di scuola media alla d
 
 def process_ai_response(question_payload: str,  db_pool_manager : DatabaseConnection):
     """
-    Funzione eseguita da un thread separato per interagire con Ollama
-    e salvare la risposta nel database.
+    Funzione edeguita da un thread separato per non bloccare il main thread,
+    interagisce con il modello di IA (Ollama) mandando una richiesta per ogni 
+    livello in 'lista_livelli' e salva le risposte nel database.
     """
-    thread_name = threading.current_thread().name # Ottieni il nome del thread per i log
+    thread_name = threading.current_thread().name
     print(f"[{thread_name}] Avvio elaborazione Ollama")
 
     for i in range(3):
@@ -22,10 +23,19 @@ def process_ai_response(question_payload: str,  db_pool_manager : DatabaseConnec
             # Il db_pool_manager_instance è l'oggetto passato dal main thread
 
             #spostare dopo la richiesta alla ia per avere la connessione occupata per meno tempo
+
+            # Acquisisce una connessione dal pool specificamente per questo thread 
             conn = db_pool_manager.get_connection() 
             print(f"[{thread_name}] Connessione DB acquisita dal pool per la task {i}.")
 
-            data={"model": MODEL_NAME, "messages":[{"role":"user", "content":f"{lista_livelli[0]} '{question_payload}'. Non superare i 250 caratteri (spazi inclusi) e restituisci unicamente la risposta"}], "stream":False}
+            data={
+                "model": MODEL_NAME,
+                "messages":[{
+                    "role":"user", 
+                    "content":f"{lista_livelli[i]} '{question_payload}'. Non superare i 250 caratteri (spazi inclusi) e restituisci unicamente la risposta"
+                }], 
+                "stream":False
+            }
             response= requests.post(f"{OLLAMA_URL}/chat", json=data)
             response.raise_for_status()
             ollama_response = response.json().get("message", "").get("content", "")

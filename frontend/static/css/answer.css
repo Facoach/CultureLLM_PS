@@ -1,10 +1,11 @@
 html, body {
     margin: 0;
     padding: 0;
-    background-color: #37374F; /* Stesso colore di sfondo del layout principale */
-    font-family: Arial, sans-serif; /* Assicurati che il font sia coerente */
+    background-color: #37374F;
+    font-family: Arial, sans-serif;
     }
 
+/* Chat con domanda */
 .answer-chat {
     flex: 1 1 0;
     display: flex;
@@ -13,8 +14,8 @@ html, body {
     background-color: #2c2c3f !important;
     border-radius: 0;
     min-width: 0;
-    min-height: 100vh; /* Fa in modo che occupi l'intera altezza della viewport */
-    box-sizing: border-box; /* Include padding e border nella larghezza/altezza */
+    min-height: 100vh; 
+    box-sizing: border-box;
 }
 
 .answer-chat-container {
@@ -22,41 +23,54 @@ html, body {
     overflow-y: auto;
     padding: 18px;
     min-height: 0;
-    display: flex; /* Utilizza flexbox per centrare il contenuto */
+    display: flex;
     flex-direction: column;
-    justify-content: center; /* Centra verticalmente */
-    align-items: center; /* Centra orizzontalmente */
+    justify-content: center;
+    align-items: center;
     text-align: center;
 }
 
+p {
+    color:#22c047;
+    font-weight: bold;
+}
+
 .main-question-display {
-    color: #ececec; /* Colore del testo */
-    font-size: 2.5rem; /* Font molto grande */
+    color: #ececec;
+    font-size: 2.5rem;
     font-weight: 700;
     margin-bottom: 20px;
     padding: 15px 30px;
-    background-color: #37374F; /* Un colore di sfondo per la domanda, se vuoi farla risaltare */
+    background-color: #37374F;
     border-radius: 10px;
-    max-width: 80%; /* Limita la larghezza per evitare che si estenda troppo */
-    word-wrap: break-word; /* Permette al testo lungo di andare a capo */
+    max-width: 80%;
+    word-wrap: break-word;
 }
 
+/* Form per ripondere, bottone di invio e refresh della domanda */
 .answer-form-wrapper {
-    position: fixed; /* Fissa il wrapper in fondo alla viewport */
-    bottom: 0; /* Allinea al bordo inferiore */
-    left: 0; /* Allinea al bordo sinistro */
-    width: 100%; /* Occupa l'intera larghezza della viewport */
-    background-color: #37374F;; /* Un colore di sfondo per la fascia in basso, puoi cambiarlo */
-    padding: 10px 20px; /* Spaziatura interna */
-    box-shadow: 0 -2px 10px rgba(0,0,0,0.1); /* Un'ombra per dare profondità */
-    display: flex; /* Abilita Flexbox per allineare i form */
-    align-items: center; /* Centra verticalmente gli elementi all'interno */
-    gap: 15px; /* Spazio tra gli elementi (input, bottoni) */
-    box-sizing: border-box; /* Assicura che padding e border siano inclusi nella larghezza */
-    z-index: 1000; /* Assicura che sia sopra gli altri contenuti */
+    position: fixed;
+    bottom: 0; 
+    left: 0; 
+    width: 100%;
+    background-color: #37374F;
+    padding: 10px 20px; 
+    box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+    display: flex; 
+    align-items: center;
+    gap: 15px; 
+    box-sizing: border-box; 
+    z-index: 1000; 
 }
 
-#answer { /* Usa questo ID per l'input di risposta */
+.ans-form {
+    display: flex;
+    flex-grow: 1;
+    gap: 10px; 
+    align-items: center; 
+}
+
+#answer { 
     flex: 2 1 0;
     height: 20px;
     min-width: 180px;
@@ -79,22 +93,15 @@ html, body {
     border: 2px solid #7775b5;
 }
 
-.ans-form {
-    display: flex; /* Abilita Flexbox per gli elementi del primo form */
-    flex-grow: 1; /* Permette al form di occupare lo spazio disponibile */
-    gap: 10px; /* Spazio tra input e bottone di invio */
-    align-items: center; /* Allinea verticalmente input e bottone */
-}
-
 .ans-form input[type="text"] {
-    flex-grow: 1; /* L'input occuperà lo spazio rimanente */
+    flex-grow: 1;
     padding: 10px;
     border: 1px solid #ccc;
     border-radius: 5px;
     font-size: 1rem;
 }
 
-.send-btn { /* Classi per i bottoni, useremo send-btn e una nuova classe per il refresh */
+.send-btn {
     background: #ffffff !important;
     border: none;
     padding: 0;
@@ -117,7 +124,6 @@ html, body {
     background: #ffffff;
 }
 
-
 .refresh-btn-answer {
     padding: 9px 15px;
     border-radius: 10px;
@@ -130,6 +136,7 @@ html, body {
     transition: background 0.18s, color 0.18s;
     box-shadow: 0 2px 8px #0002;
 }
+
 .refresh-btn-answer:hover {
     background: #6b6bb3;
     color: #fff;

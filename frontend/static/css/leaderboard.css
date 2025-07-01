@@ -99,8 +99,8 @@
 
 /* Stili Bottone Aggiorna */
 #leaderboard-app-container .update-button {
-    background-color: #007bff;
-    color: white;
+    background-color: #737297;
+    color: #eceeec;
     border: none;
     padding: 12px 25px;
     border-radius: 8px;
@@ -111,11 +111,11 @@
 }
 
 #leaderboard-app-container .update-button:hover {
-    background-color: #0056b3;
+    background-color: #737297;
     transform: translateY(-2px);
 }
 
 #leaderboard-app-container .update-button:active {
-    background-color: #004085;
+    background-color: #616080;
     transform: translateY(0);
 }

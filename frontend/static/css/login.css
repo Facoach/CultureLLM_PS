@@ -15,6 +15,7 @@ h1 {
     justify-content: center;
     align-items: center;
     margin: 30px auto;
+    margin-bottom: 0;
     height: 70vh;
     width: 100%;
 }
@@ -79,4 +80,9 @@ a {
 }
 a:hover {
     color: #a4a4b8;
+}
+p {
+    color: red;
+    font-weight: bold;
+    margin-top: 0;
 }

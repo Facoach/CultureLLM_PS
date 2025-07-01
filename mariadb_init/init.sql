@@ -69,3 +69,23 @@ INSERT INTO themes (theme) VALUES
 
 INSERT INTO users (id, username, password, score, friend_code) VALUES
 (-1, "IA", "ia", 0, 1);
+
+
+INSERT INTO questions (payload, theme_id, author) VALUES
+("Quali sono le caratteristiche principali dell'arte rinascimentale italiana?", 1, -1),
+("Quale squadra ha vinto più scudetti nella Serie A italiana?", 2, -1),
+("Chi è il regista italiano noto per il film 'La dolce vita'?", 3, -1),
+("Quali sono gli ingredienti tradizionali della pizza margherita?", 4, -1),
+("In quale città italiana si svolge il famoso Carnevale con le maschere?", 5, -1),
+("Chi è stato Giordano Bruno e perché è importante nella filosofia italiana?", 6, -1),
+("Qual è il vulcano attivo situato vicino a Napoli?", 7, -1),
+("Chi ha scritto 'La Divina Commedia'?", 8, -1),
+("Qual è la differenza tra l'uso del passato prossimo e dell'imperfetto in italiano?", 9, -1),
+("Quali sono le principali città italiane della moda?", 10, -1),
+("Chi ha scritto la canzone 'Volare' (Nel blu dipinto di blu)?", 11, -1),
+("Chi era Leonardo da Vinci e quali sono le sue invenzioni più famose?", 12, -1),
+("Chi è stato il primo presidente della Repubblica Italiana?", 13, -1),
+("Qual è la città italiana considerata il centro del cattolicesimo?", 14, -1),
+("Chi era Galileo Galilei e quale fu il suo contributo alla scienza?", 15, -1),
+("Qual è lo sport più praticato in Italia oltre al calcio?", 16, -1),
+("Quale evento segnò l'inizio della Repubblica Italiana?", 17, -1);
