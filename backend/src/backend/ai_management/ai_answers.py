@@ -41,7 +41,9 @@ def process_ai_response(question_payload: str,  db_pool_manager : DatabaseConnec
 
             # Trova l'id della domanda nel db ed inserisce la risposta nel db
             iddomanda= execute_query_ask(conn, f'select id from questions where payload=%s;', [question_payload])
+            transazione = execute_query_modify(conn, 'START TRANSACTION')
             execute_query_modify(conn, f'insert into answers (payload,question,author) values (%s, %s, %s);', [ollama_response[:255], iddomanda[1][0], -1])
+            transazione = execute_query_modify(conn, 'COMMIT')
 
         except requests.exceptions.RequestException as e:
             print(f"[{thread_name}] Errore durante la richiesta all'ia nella task {i}: {e}")

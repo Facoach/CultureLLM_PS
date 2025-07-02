@@ -127,7 +127,7 @@ def directpassreset(request: Request):
     return templates.TemplateResponse("passreset.html", {"request": request})
 
 
-@app.post("/login")
+@app.post("/login", response_class=HTMLResponse)
 async def login_post(request: Request, username: str = Form(...), password: str = Form(...)):
     """
     Gestisce il login via form, effettua chiamata al backend e copia il cookie di sessione.
@@ -239,7 +239,7 @@ async def get_answer_tab_content(request: Request):
         error_template="answer.html"
     )
 
-@app.post("/register")
+@app.post("/register", response_class=HTMLResponse)
 async def register_post(request: Request, username: str = Form(...), password: str = Form(...), repeatpass: str = Form(...), friend_code: str = Form("")):
     """
     Gestisce la registrazione nuovo utente.
@@ -264,7 +264,7 @@ async def register_post(request: Request, username: str = Form(...), password: s
     )
 
 
-@app.post("/passreset")
+@app.post("/passreset", response_class=HTMLResponse)
 async def passreset(request: Request, newpass: str = Form(...), newpass2: str = Form(...)):
     """
     Gestisce il reset della password.
@@ -294,7 +294,7 @@ async def passreset(request: Request, newpass: str = Form(...), newpass2: str = 
     return RedirectResponse(url="/profile", status_code=302)
 
 
-@app.post("/ask")
+@app.post("/ask", response_class=HTMLResponse)
 async def ask_post(request: Request, question: str = Form(...), tema: str = Form(...), temi_json:str =Form(...)):
     """
     Invia una nuova domanda.
@@ -373,7 +373,7 @@ async def human_post(request: Request, human: int = Form(...), questionid: int =
     )
 
 
-@app.post("/answer")
+@app.post("/answer", response_class=HTMLResponse)
 async def answer_post(request: Request, answer: str = Form(...), domanda: str = Form(...), domandaid: int = Form(...), tab_creation: int = Form(...), tema: str = Form(...)):
     """
     Invia una risposta.
@@ -398,7 +398,7 @@ async def answer_post(request: Request, answer: str = Form(...), domanda: str = 
         error_template="answer.html"
     )
 
-@app.get("/profile")
+@app.get("/profile", response_class=HTMLResponse)
 async def profile(request: Request):
     """
     Mostra il profilo dell'utente.
@@ -412,7 +412,7 @@ async def profile(request: Request):
         error_template="dashboard.html"
     )
 
-@app.post("/logout")
+@app.post("/logout", response_class=HTMLResponse)
 async def logout_post(request: Request):
     """
     Gestisce il logout, elimina il cookie di sessione e reindirizza.

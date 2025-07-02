@@ -3,9 +3,10 @@ from .jwt_utils import decode_access_token
 from mariadb import Error, Connection
 from random import choice
 from fastapi import Request, HTTPException
+from typing import List
 
 
-def get_question(user_id: int, theme: str, questionid: int, db_conn: Connection):
+def get_question(user_id: int, theme: str, questionid: int, db_conn: Connection) -> List:
     """
     Funzione helper per ottenere una nuova domanda da rispondere.
     Marca la domanda come "in risposta" dall'utente corrente.
@@ -20,7 +21,7 @@ def get_question(user_id: int, theme: str, questionid: int, db_conn: Connection)
     try:
         # Seleziona 10 domande non ancora risposte e non in fase di risposta
         # escludendo quelle dell'autore e il tema e ID specifici.
-        ret = execute_query_ask(db_conn, f'SELECT questions.id, payload, theme FROM questions join themes on themes.id=theme_id WHERE author != %s AND is_answering=0 AND answered = 0 AND theme!=%s AND questions.id != %s ORDER BY id ASC LIMIT 10;', [user_id, theme, questionid])
+        ret = execute_query_ask(db_conn, f'SELECT questions.id, payload, theme FROM questions join themes on themes.id=theme_id WHERE author != %s AND is_answering=0 AND answered = 0 AND theme!=%s AND questions.id != %s ORDER BY id ASC LIMIT 20;', [user_id, theme, questionid])
         ret.pop(0) # Rimuove le intestazioni di colonna
 
         if not ret:
