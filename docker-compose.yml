@@ -59,8 +59,6 @@ services:
       interval: 10s
       timeout: 5s
       retries: 10
-    volumes:
-    - ./backend:/app/src/backend
 
 
   frontend:
@@ -75,7 +73,3 @@ services:
       backend:
         condition: service_healthy
     restart: always
-    volumes:
-    - ./frontend/src/frontend:/app/src/frontend
-    - ./frontend/templates:/app/templates
-    - ./frontend/static:/app/static

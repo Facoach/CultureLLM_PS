@@ -56,6 +56,10 @@ body {
     text-decoration: none;
     font-weight: 600;
     transition: background 0.2s;
+    border: none;         
+    cursor: pointer;     
+    font-size: 16px;     
+    display: inline-block;
 }
 
 .profile-btn:hover {
