@@ -463,7 +463,6 @@ async def logout(response: Response, user_id: int = Depends(get_current_user_id)
     return ResponseLogout(message = "Logout effettuato con successo")
 
 
-
 @app.get("/check_new_answers")
 async def check_new_answers(user_id: int = Depends(get_current_user_id), db_conn: Connection = Depends(get_db_connection)) -> ResponseCheckNewAnswers:
     """
@@ -486,8 +485,6 @@ async def check_new_answers(user_id: int = Depends(get_current_user_id), db_conn
     question_ids = [q[0] for q in questions]
 
     return ResponseCheckNewAnswers(new_answers = question_ids)
-
-
 
 
 @app.on_event("startup")

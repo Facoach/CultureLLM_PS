@@ -1,27 +1,29 @@
+<!-- Layout principale composto da tre colonne (sidebar, chat centrale, extra) -->
+<!-- Tenere conto che ogni domanda è del tipo [id, testo, tema, answered, checked] -->
 <div class="ask-layout">
-    <!-- Ogni domanda è del tipo [id, testo, tema, answered, checked] -->
-    <!-- BLOCCO A SINISTRA CON LE DOMANDE -->
+    <!-- COLONNA DI SX (SIDEBAR DELLE DOMANDE) -->
     <div class="ask-sidebar">
         <!-- 1. Domande in lavorazione -->
         <div class="sidebar-section">
             <div class="section-title">In lavorazione</div>
             <div id="pending-questions">
                 
-                <!--Domande che non hanno ricevuto una risposta-->
+                <!-- Domande che non hanno ricevuto una risposta -->
                 {% set lavorazione = domande | selectattr("3", "equalto", 0) | list %}
-                <!--Hanno ricevuto una risposta ma devono essere valutate-->
+                <!-- Hanno ricevuto una risposta ma devono essere valutate -->
                 {% set in_review = domande | selectattr("3", "equalto", 1) | selectattr("4", "equalto", 0) | list %}
-                <!--Tutte le domande che devono essere processate (aspettano risposta o aspettano review)-->
+                <!-- Tutte le domande che devono essere processate (aspettano risposta o aspettano review) -->
                 {% set domande_lavorazione = lavorazione + in_review %}
-                <!--Controlla se il numero massimo di domande è stato raggiunto-->
+                <!-- Controlla se il numero massimo di domande è stato raggiunto -->
                 {% set max_domande = domande_lavorazione | length >= 10 %}
+
                 {% if domande_lavorazione %}
                     {% for item in domande_lavorazione %}
-                        
-                        <!-- Quando fai click sul bottone della domanda chiama loadValidate che aggiorna la parte centrale con la valutazione -->
+                        <!-- Quando fai click sul bottone della domanda chiama loadValidate che 
+                             aggiorna la parte centrale con la valutazione -->
                         <div class="question-card in-progress">
                             <button class="question-title"
-                                onclick="loadValidate('{{item[0]}}', '{{item[4]}}')"
+                                onclick="loadValidate('{{item[0]}}')"
                                 data-questionid="{{item[0]}}">
                                 {{item[2]}}
                                 <span class="notif-dot" style="display:none;"></span>
@@ -34,16 +36,19 @@
                 {% endif %}
             </div>
         </div>
-        <!--2. Domande completate -->
+        <!-- 2. Domande completate -->
         <div class="sidebar-section">
             <div class="section-title">Completate</div>
             <div id="answered-questions">
-                <!--Domance che sono state sia risposte sia valutate-->
+                <!-- Domance che sono state sia risposte sia valutate -->
                 {% set domande_completate = domande | selectattr("3", "equalto", 1) | selectattr("4", "equalto", 1) | list %}
+                
                 {% if domande_completate %}
                     {% for item in domande_completate %}
+                    <!-- Quando fai click sul bottone della domanda chiama loadValidate che 
+                         aggiorna la parte centrale con la visualizzazione apposita -->
                         <div class="question-card in-progress">
-                            <button class="question-title" onclick="loadValidate('{{item[0]}}', '{{item[4]}}')">
+                            <button class="question-title" onclick="loadValidate('{{item[0]}}')">
                                 {{item[2]}}
                             </button>
                         </div>
@@ -53,29 +58,40 @@
                 {% endif %}
             </div>
         </div>
-
     </div>
 
-    <!-- BLOCCO CENTRALE (CHAT) -->
+    <!-- COLONNA CENTRALE (CHAT) -->
     <div class="ask-chat">
-        <!--Chat view viene (il div) viene popolato dinamicamente da javascript-->
+        <!-- Chat view (il div) viene popolato dinamicamente da javascript -->
         <div class="chat-container" id="chat-view">
             <p style="color:#7c7c9a;text-align:center;">{{message}}</p>
         </div>
         <div class="ask-form-wrapper">
+            <!-- Form per inserire una nuova domanda -->
             <form id="ask-form" method="POST" action="/ask" class="ask-form">
+                <!-- Temi disponibili passati in formato JSON nascosto -->
                 <input type="hidden" id="temi_json" name= "temi_json" value="{{temi | tojson}}">
-                <input type="text" id="question" name="question" required autocomplete="off" maxlength="255"
-                       {% if max_domande %} placeholder="Hai già 10 domande in lavorazione! Attendi una risposta per poterne fare altre!."
-                       disabled
-                       {% else %} placeholder="Scrivi la tua domanda..."
-                       {% endif %}>
+                <!-- Campo testo domanda che viene disabilitato se si raggiunge il massimo di domande in lavorazione -->
+                <input 
+                    type="text" 
+                    id="question" 
+                    name="question" 
+                    required autocomplete="off" 
+                    maxlength="255"
+                    {% if max_domande %} placeholder="Hai già 10 domande in lavorazione! Attendi una risposta per poterne fare altre!."
+                        disabled
+                    {% else %} 
+                        placeholder="Scrivi la tua domanda..."
+                    {% endif %}
+                >
+                <!-- Selettore per i temi disponibili -->
                 <select id="tema" name="tema" required>
                     <option value="">-- Tema --</option>
                     {% for t in temi %}
                         <option value="{{t}}">{{t}}</option>
                     {% endfor %}
                 </select>
+                <!-- Bottone invio domanda che viene disabilitato se si raggiunge il massimo di domande in lavorazione -->
                 <button type="submit" class="send-btn" {% if max_domande %} disabled {% endif %}>
                     <img src="/static/img/send.png" alt="Invia" class="send-icon">
                   </button>
@@ -83,8 +99,9 @@
         </div>
     </div>
     
-    <!-- BLOCCO A DESTRA CON BOH FORSE CLASSIFICA E STATISTICHE? -->
+    <!-- COLONNA DI DX (EXTRA) -->
     <div class="ask-extra">
+        <!-- Card con le statistiche riguardanti le domande -->
         <div class="info-card">
             <div class="info-title">Statistiche</div>
             <div class="info-item">
@@ -99,12 +116,17 @@
                 <b>{{ domande|selectattr("4", "equalto", 1)|list|length }}</b>
             </div>
         </div>
+        <!-- Card di aiuto con spiegazioni sul funzionamento del sito -->
         <div class="info-card">
             <div class="info-title">Aiuto</div>
             <div class="info-item">
-                Poni una domanda su cinema, cucina, geografia, calcio…
+                - Poni una domanda su cinema, cucina, geografia, calcio… <br>
+                - Guadagnerai 10 punti per ogni domanda posta. <br>
+                - Se una tua risposta viene valutata come migliore guadagnerai 40 punti. <br>
+                - Se riesci a capire quale rispota è stata data da un umano ne guadagnerai 10. <br> 
             </div>
         </div>
+        <!-- Bottone per il refresh della pagina -->
         <form method="GET" action="/get_tab_content/ask">
         <button type="submit" class="refresh-btn">Aggiorna pagina</button>
         </form>

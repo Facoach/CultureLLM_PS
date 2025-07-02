@@ -5,11 +5,19 @@ body {
     text-align: center;
     padding: 20px;
 }
+
 h1 {
     font-size: 35px;
     margin-bottom: 40px;
     color: #ececec;
 }
+
+p {
+    color: red;
+    font-weight: bold;
+    margin-top: 0;
+}
+
 .container {
     display: flex;
     justify-content: center;
@@ -19,6 +27,7 @@ h1 {
     height: 70vh;
     width: 100%;
 }
+
 .login-box {
     border: none;
     border-radius: 8px;
@@ -27,6 +36,7 @@ h1 {
     width: 300px;
     box-shadow: 0 0 10px rgba(0,0,0,0.1);
 }
+
 label {
     font-weight: bold;
     font-size: 16px;
@@ -35,6 +45,7 @@ label {
     text-align: left;
     color: #ececec;
 }
+
 input[type="text"],
 input[type="password"] {
     font-size: 16px;
@@ -46,11 +57,13 @@ input[type="password"] {
     background: #37374b;
     color: #ececec;
 }
+
 input:focus {
     outline: none;
     box-shadow: none;
     border: 2px solid #9b99d1;
 }
+
 button {
     font-size: 16px;
     font-weight: bold;
@@ -62,15 +75,11 @@ button {
     cursor: pointer;
     width: 100%;
 }
+
 button:hover {
     background-color: #70708b;
 }
 
-.error {
-    color: red;
-    font-weight: bold;
-    margin-top: 10px;
-}
 a {
     text-decoration: none;
     font-weight: bold;
@@ -78,11 +87,13 @@ a {
     display: block;
     margin-top: 15px;
 }
+
 a:hover {
     color: #a4a4b8;
 }
-p {
+
+.error {
     color: red;
     font-weight: bold;
-    margin-top: 0;
+    margin-top: 10px;
 }

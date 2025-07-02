@@ -12,11 +12,11 @@ class DatabaseConnection:
         Inizializza i parametri di connessione e la configurazione del pool, 
         i valori vengono presi dalle variabili d'ambiente se non forniti esplicitamente
         """
-        self.host = host or getenv("MYSQL_HOST", "mariadb-cinema")
+        self.host = host or getenv("MYSQL_HOST", "mariadb-culture")
         self.port = int(port or getenv("MYSQL_PORT", 3306))
         self.user = user or getenv("MYSQL_USER", "root")
         self.password = password or getenv("MYSQL_PASSWORD", "root")
-        self.database = database or getenv("MYSQL_DATABASE", "cinema_db")
+        self.database = database or getenv("MYSQL_DATABASE", "Culture")
         self.pool_size = int(pool_size or getenv("MYSQL_POOL_SIZE", 10))
         self.pool_name = pool_name or getenv("MYSQL_POOL_NAME", "CultureAppMariaDBPool")
         self._is_pool_initialized = False

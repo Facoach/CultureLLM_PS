@@ -1,21 +1,23 @@
+// Funzione per copiare il codice di invito negli appunti
 function copyInviteCode() {
     const code = document.getElementById('invite-code').innerText;
     navigator.clipboard.writeText(code);
 }
 
+// Aggiunge un event listener sull'evento 'pagehide', che viene chiamato 
+// quando l'utente chiude la pagina
 window.addEventListener('pagehide', function(event){
     if(!event.persisted){
-        const logoutEndpoint = '/logout'; // Sostituisci con il tuo endpoint di logout effettivo
+        const logoutEndpoint = '/logout';
     const data = JSON.stringify({ message: 'User logging out' });
 
-    // Controlla se sendBeacon è supportato dal browser
+    // Controlla se sendBeacon è supportato dal browser, in tal caso lo usa per mandare la
+    // richiesta di logout in modo affidabile, altrimenti usa fetch anche se meno affidabile
     if (navigator.sendBeacon) {
       navigator.sendBeacon(logoutEndpoint, data);
       console.log('Logout beacon sent.');
     } else {
-      // Fallback per browser che non supportano sendBeacon (meno affidabile)
       console.warn('navigator.sendBeacon not supported. Attempting less reliable logout.');
-      // fetch (potrebbe non essere completato)
       fetch(logoutEndpoint, {
         method: 'POST',
         headers: {

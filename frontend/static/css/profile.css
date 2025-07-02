@@ -9,7 +9,7 @@ body {
     background-color: #21223a;
 }
 
-/* Barra di navigazione */
+
 .navbar {
     width: 100vw;
     background: #1a1a1a;
@@ -62,7 +62,7 @@ body {
     background: #484863;
 }
 
-/* Profilo */
+
 .profile-title {
     text-align: center;
     font-size: 2rem;
@@ -106,7 +106,15 @@ body {
 .invite-bar {
     display: flex;
     align-items: center;
+    flex-direction: column;
     margin-top: 7px;
+}
+
+.invite-row {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    margin-top: 5px;
 }
 
 .invite-label {
@@ -148,6 +156,12 @@ body {
     background: #bdbdbd !important;
 }
 
+.invite-info {
+    color: #bdbdd6;
+    font-size: 14px;
+    margin-top: 15px;
+}
+
 .card-section-title {
     max-width: 500px;
     margin: 38px auto 6px auto;
@@ -158,7 +172,7 @@ body {
     text-align: left;
 }
 
-/* Statistiche */
+
 .stats-card,
 .security-card {
     max-width: 500px;
@@ -177,7 +191,7 @@ body {
     color: #ececec;
 }
 
-/* Sicurezza */
+
 .security-card {
     gap: 16px;
     max-width: 500px;

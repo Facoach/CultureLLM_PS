@@ -8,17 +8,22 @@
 <body>
     <div class="container">
         <div class="login-box">
+            <!-- Form per cambiare la password -->
             <form action="/passreset" method="POST">
                 <h1>Cambia Password</h1>
+                <!-- Campo nuova password -->
                 <label for="newpass">Nuova Password:</label>
                 <input type="password" id="newpass" name="newpass" required maxlength="127">
+                <!-- Campo conferma nuova password -->
                 <label for="newpass2">Ripetere la nuova Password:</label>
                 <input type="password" id="newpass2" name="newpass2" required maxlength="127">
+                <!-- Bottone di invio -->
                 <button type="submit">Modifica</button>
                 {% if error %}
                     <p class="error">{{ error }}</p>
                 {% endif %}
             </form>
+            <!-- Link al profilo dell'utente -->
             <a href="http://localhost:8001/profile">Torna al profilo</a>
         </div>
     </div>

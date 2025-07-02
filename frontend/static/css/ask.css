@@ -1,21 +1,19 @@
-/* ========== ROOT & BACKGROUND ========== */
 html, body {
     margin: 0;
     padding: 0;
     background-color: #37374F;
 }
-/**/
+
 form {
-    display: contents; /* fa sì che il form NON influisca sul layout */
+    display: contents;
     margin: 0;
     padding: 0;
 }
 
 
-/* ========== LAYOUT ========== */
 .ask-layout {
     display: flex;
-    height: calc(100vh - 56px);  /* Adatta se navbar diversa */
+    height: calc(100vh - 56px);
     box-sizing: border-box;
     background: #37374F;
     margin: 0 !important;
@@ -23,7 +21,7 @@ form {
     min-height: 0;
 }
 
-/* ========== SIDEBAR SINISTRA ========== */
+
 .ask-sidebar {
     width: 260px;
     display: flex;
@@ -40,14 +38,17 @@ form {
     width: 12px;
     background: #272735;
 }
+
 .ask-sidebar::-webkit-scrollbar-thumb {
     background: #575775;
     border-radius: 6px;
     border: 2px solid #272735;
 }
+
 .ask-sidebar::-webkit-scrollbar-thumb:hover {
     background: #8888b3;
 }
+
 .ask-sidebar::-webkit-scrollbar-track {
     background: #272735;
     border-radius: 6px;
@@ -56,16 +57,17 @@ form {
 .sidebar-section {
     padding-top: 12px;
 }
+
 .section-title {
     font-weight: 700;
     margin-top: 18px;
     margin-bottom: 22px;
-    color: #9797aa;   /* stesso colore per titoli sidebar/statistiche */
+    color: #9797aa;
     letter-spacing: 0.2px;
     font-size: 1.09rem;
 }
 
-/* ========== CARDS DOMANDE ========== */
+
 .question-card {
     width: 100%;
     min-height: 42px;
@@ -104,7 +106,7 @@ form {
     color: #fff !important;
 }
 
-/* PALLINO NOTIFICA */
+
 .notif-dot {
     width: 8px;
     height: 8px;
@@ -114,10 +116,10 @@ form {
     flex-shrink: 0;
     display: inline-block;
     position: relative;
-    top: -10px; /* leggermente più in alto */
+    top: -10px;
 }
 
-/* ========== BLOCCO CENTRALE CHAT ========== */
+
 .ask-chat {
     flex: 1 1 0;
     display: flex;
@@ -128,6 +130,7 @@ form {
     min-width: 0;
     min-height: 0;
 }
+
 .chat-container {
     flex: 1 1 auto;
     overflow-y: auto;
@@ -137,12 +140,13 @@ form {
 }
 
 
-/* ========== FORM IN BASSO ========== */
+
 .ask-form-wrapper {
     flex-shrink: 0;
     padding: 10px 18px 20px 18px;
     background-color: #37374F;
 }
+
 .ask-form {
     display: flex;
     gap: 8px;
@@ -159,19 +163,23 @@ form {
     color: #ececec;
     border: none;
 }
+
 #question::placeholder {
     color: #9797aa;
     opacity: 1;
 }
+
 #question:disabled::placeholder {
     color: #ff5454 !important;
     opacity: 1;
 }
+
 #question:focus {
     outline: none;
     box-shadow: none;
     border: 2px solid #7775b5;
 }
+
 #tema {
     flex: 1 1 0;
     min-width: 120px;
@@ -197,17 +205,21 @@ form {
     justify-content: center;
     transition: background 0.15s;
 }
+
 .ask-form button:disabled {
     background: #999;
     color: #ddd;
     cursor: not-allowed;
 }
+
 .send-btn {
     background: #ffffff !important;
 }
+
 .send-btn:active {
     background: #ffffff;
 }
+
 .send-btn:disabled {
     opacity: 0.5;
     cursor: not-allowed;
@@ -215,10 +227,12 @@ form {
     background: #888 !important;
     box-shadow: none;
 }
+
 .send-btn:disabled .send-icon {
     filter: grayscale(0.6) brightness(0.6);
     opacity: 0.8;
 }
+
 .send-icon {
     width: 23px;
     height: 23px;
@@ -228,7 +242,7 @@ form {
     background: #ffffff;
 }
 
-/* ========== BLOCCO DESTRO: INFO ========== */
+
 .ask-extra {
     width: 260px;
     display: flex;
@@ -261,6 +275,7 @@ form {
     letter-spacing: 0.5px;
     text-shadow: 0 1px 2px #24243a33;
 }
+
 .info-item {
     font-size: 1rem;
     color: #ececec;
@@ -281,12 +296,13 @@ form {
     transition: background 0.18s, color 0.18s;
     box-shadow: 0 2px 8px #0002;
 }
+
 .refresh-btn:hover {
     background: #6b6bb3;
     color: #fff;
 }
 
-/* ========== UTILI ========== */
+
 .no-questions {
     color: #b7b7d4;
     text-align: center;
@@ -294,14 +310,13 @@ form {
     margin: 10px 0 14px 0;
 }
 
-
-
 .question-main {
     display: flex;
     flex-direction: column;
     align-items: center;
     margin-bottom: 17px;
 }
+
 .main-question {
     color: #2e2e42;
     background: #76768d;
@@ -314,12 +329,14 @@ form {
     box-shadow: 0 2px 12px #0002;
     word-break: break-word;
 }
+
 .sub-message {
     color: #b7b7d4;
     font-size: 1.01rem;
     margin-bottom: 4px;
     text-align: center;
 }
+
 .waiting-message {
     color: #b7b7d4;
     text-align: center;
@@ -330,6 +347,7 @@ form {
     margin: 30px auto 0 auto;
     max-width: 350px;
 }
+
 .answers-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -337,6 +355,7 @@ form {
     margin: 22px 0 17px 0;
     min-height: 190px;
 }
+
 .answer-cell {
     cursor: pointer;
     transition: background 0.15s, box-shadow 0.15s;
@@ -347,14 +366,17 @@ form {
     word-break: break-word;
     border-radius: 10px;
 }
+
 .answer-cell:hover:not(.disabled) {
     background: #515179;
     box-shadow: 0 4px 18px #0003;
 }
+
 .answer-cell.disabled {
     opacity: 0.45;
     pointer-events: none;
 }
+
 .answer-title {
     color: #a8a8bd;
     font-size: 1rem;
@@ -363,12 +385,14 @@ form {
     letter-spacing: 0.2px;
     text-align: center;
 }
+
 .answer-text {
     color: #ececec;
     font-size: 1.06rem;
     line-height: 1.45;
     text-align: left;
 }
+
 .answer-text.pending {
     width: 100%;
     text-align: center;
@@ -376,9 +400,11 @@ form {
     align-items: center;
     display: flex;
 }
+
 .answer-text.pending em {
     margin: 0 auto;
 }
+
 .best-answer-block {
     margin: 0 auto 0 auto;
     max-width: 410px;
@@ -388,17 +414,20 @@ form {
     text-align: center;
     box-shadow: 0 2px 12px #0002;
 }
+
 .best-title {
     color: #70fd7c;
     font-size: 1.1rem;
     font-weight: 700;
     margin-bottom: 7px;
 }
+
 .best-answer {
     color: #ececec;
     font-size: 1.07rem;
     font-weight: 500;
 }
+
 .answer-btns-row {
     margin-top: 12px;
     display: flex;
@@ -406,6 +435,7 @@ form {
     gap: 12px;
     flex-wrap: wrap;
 }
+
 .answer-best-btn {
     background: #31314d;
     color: #70fd7c;
@@ -418,10 +448,12 @@ form {
     transition: background 0.14s, color 0.14s;
     box-shadow: 0 2px 7px #0002;
 }
+
 .answer-best-btn:hover {
     background: #40a049;
     color: #fff;
 }
+
 @media (max-width: 650px) {
     .answers-grid { grid-template-columns: 1fr; }
 }

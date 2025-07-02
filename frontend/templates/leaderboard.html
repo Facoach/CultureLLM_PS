@@ -3,6 +3,7 @@
         <p class="message">{{message}}</p>
         <div class="leaderboard-container">
             <h2>Classifica</h2>
+             <!-- Lista ordinata dei primi 10 utenti per punteggio -->
             <ol class="leaderboard-list">
                 {% for entry in leaderboard [:10] %}
                 <li class="leaderboard-item">
@@ -14,6 +15,7 @@
             </ol>
         </div>
         <form id="leaderboard-form" action="/get_tab_content/leaderboard" method="GET">
+             <!--Bottone per refreshare manualmente la leaderboard -->
             <button type="submit" class="update-button">Aggiorna leaderboard</button>
         </form>
     </div>

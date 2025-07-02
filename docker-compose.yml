@@ -1,9 +1,9 @@
 version: '3.8'
 
 services:
-  mariadb-cinema:
+  mariadb-culture:
     image: mariadb:11.7.2-ubi9
-    container_name: mariadb-cinema
+    container_name: mariadb-culture
     environment:
       - MYSQL_ROOT_PASSWORD=root
     ports:
@@ -36,7 +36,7 @@ services:
     ports:
       - "8003:8003"
     environment:
-      - MYSQL_HOST=mariadb-cinema
+      - MYSQL_HOST=mariadb-culture
       - MYSQL_PORT=3306
       - MYSQL_USER=root
       - MYSQL_PASSWORD=root
@@ -50,7 +50,7 @@ services:
     depends_on:
       ollama:
         condition: service_started
-      mariadb-cinema:
+      mariadb-culture:
         condition: service_healthy
     restart: always
     healthcheck:

@@ -8,17 +8,22 @@
 <body>
     <div class="container">
         <div id="login-form-container" class="login-box">
+            <!-- Form di login che invia username e password tramite POST -->
             <form action="/login" method="POST">
                 <h1>Login</h1>
+                <!-- Campo username -->
                 <label for="username">Username:</label>
                 <input type="text" id="username" name="username" required maxlength="127">
+                <!-- Campo password -->
                 <label for="password">Password:</label>
                 <input type="password" id="password" name="password" required maxlength="127">
+                <!-- Bottone di invio -->
                 <button type="submit">Accedi</button>
                 {% if error %}
                     <p class="error">{{ error }}</p>
                 {% endif %}
             </form>
+            <!-- Link alla pagina di registrazione -->
             <a href="http://localhost:8001/directregister">Registrati</a>
         </div>
     </div>

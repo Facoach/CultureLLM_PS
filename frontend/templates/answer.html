@@ -1,26 +1,47 @@
 <div class="answer-chat">
+    <!-- Contenitore principale della chat -->
     <div class="answer-chat-container" id="ans-chat-view">
         {% if message %}
         <p class="{{ 'message' if 'successo' in message|lower else 'error-message' }}">{{ message }}</p>
         {% endif %}
+        <!-- Se disponibile, mostra la domanda -->
         <div class="main-question-display">
             {{payload[1] if payload else "Errore: domanda non disponibile."}}
         </div>
     </div>
+
     <div class="answer-form-wrapper">
+        <!-- Form per l'invio della risposta -->
         <form id="answer-form" action="/answer" method="POST" class="ans-form">
-            <input type="text" id="answer" name="answer" required maxlength="255" {% if payload[1]=="Non ci sono ulteriori domande a cui rispondere, vai a porne di nuove!" %} placeholder="Attendi una nuova domanda a cui rispondere!"
-            disabled
-            {% else %} placeholder="Scrivi la tua Risposta..."
-            {% endif %}>
+            <input 
+                type="text" 
+                id="answer" 
+                name="answer" 
+                required maxlength="255" 
+                {% if payload[1]=="Non ci sono ulteriori domande a cui rispondere, vai a porne di nuove!" %} 
+                    placeholder="Attendi una nuova domanda a cui rispondere!"
+                    disabled
+                {% else %} 
+                    placeholder="Scrivi la tua Risposta..."
+                {% endif %}
+            >
+            <!-- Campi nascosti che trasmettono i dati della domanda al backend -->
             <input type="hidden" id="domandaid" name="domandaid" value="{{payload[0]}}">
             <input type="hidden" id="domanda" name="domanda" value="{{payload[1]}}">
             <input type="hidden" id="tema" name="tema" value="{{payload[2]}}">
             <input type="hidden" id="tab_creation" name="tab_creation" value="0">
-            <button type="submit" class="send-btn" {% if payload[1]=="Non ci sono ulteriori domande a cui rispondere, vai a porne di nuove!" %} disabled {% endif %}>
-                <img src="/templates/send.png" alt="Invia" class="send-icon">
+            <!-- Bottone per inviare la risposta -->
+            <button 
+                type="submit" 
+                class="send-btn" 
+                {% if payload[1]=="Non ci sono ulteriori domande a cui rispondere, vai a porne di nuove!" %} 
+                    disabled 
+                {% endif %}
+            >
+                <img src="/static/img/send.png" alt="Invia" class="send-icon">
             </button>
         </form>
+         <!-- Form secondario per l'aggiornamento forzato e per richiedere una nuova domanda -->
         <form id="refresh-form" action="/answer" method="POST" class="refresh-form-bottom">
             <input type="hidden" id="answer_refresh" name="answer" value="placeholder">
             <input type="hidden" id="domandaid_refresh" name="domandaid" value="{{payload[0]}}">

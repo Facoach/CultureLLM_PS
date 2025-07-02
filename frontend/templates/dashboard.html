@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="/static/css/answer.css">
 </head>
 <body>
+    <!-- Banner con i bottoni per ogni tab -->
     <nav class="navbar">
         <div class="nav-left">
             <button class="tab-button active" data-tab-name="ask">Ask</button>
@@ -17,18 +18,21 @@
             <button class="tab-button" data-tab-name="leaderboard">Leaderboard</button>
         </div>
         <div class="nav-right">
+            <!-- Form per il logout -->
             <form action="/logout" method="POST" class="logout-form-inside">
                 <button type="submit" class="logout-btn">Logout</button>
             </form>
+            <!-- Link al profilo dell'utente -->
             <a href="http://localhost:8001/profile" class="profile-btn">Profilo</a>
         </div>
     </nav>
-    <!--<h1>La Mia Dashboard</h1>-->
+    <!-- Layout principale della dashboard con i contenitori dei diversi tab,
+         a seconda del tab selezionato i contenuti vengono caricati
+         dinamicamente tramite javascript -->
     <div class="dashboard-layout">
         <div id="ask-content" class="tab-content active">Caricamento Ask...</div>
         <div id="leaderboard-content" class="tab-content">Caricamento Leaderboard...</div>
         <div id="answer-content" class="tab-content">Caricamento Answer...</div>
-        <!--<p>{{message}}</p>-->
     </div>
     <script src="/static/js/dashboard.js"></script>
 </body>

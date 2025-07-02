@@ -5,7 +5,7 @@ html, body {
     font-family: Arial, sans-serif;
     }
 
-/* Chat con domanda */
+
 .answer-chat {
     flex: 1 1 0;
     display: flex;
@@ -47,7 +47,7 @@ p {
     word-wrap: break-word;
 }
 
-/* Form per ripondere, bottone di invio e refresh della domanda */
+
 .answer-form-wrapper {
     position: fixed;
     bottom: 0; 
