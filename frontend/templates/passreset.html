@@ -12,12 +12,9 @@
                 <h1>Cambia Password</h1>
                 <label for="newpass">Nuova Password:</label>
                 <input type="password" id="newpass" name="newpass" required maxlength="127">
-
                 <label for="newpass2">Ripetere la nuova Password:</label>
                 <input type="password" id="newpass2" name="newpass2" required maxlength="127">
-
                 <button type="submit">Modifica</button>
-
                 {% if error %}
                     <p class="error">{{ error }}</p>
                 {% endif %}
@@ -28,5 +25,6 @@
     <div>
     <p>{{message}}</p>
     </div>
+    <script src="/static/js/passreset.js"></script>
 </body>
 </html>

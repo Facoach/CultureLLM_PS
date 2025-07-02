@@ -17,11 +17,9 @@
             <a href="/profile" class="profile-btn active">Profilo</a>
         </div>
     </nav>
-
     <div class="profile-title">Profilo</div>
-
     <div class="profile-card">
-        <img src="/templates/profile_picture.jpeg" alt="Immagine profilo" class="profile-pic">
+        <img src="/static/img/profile_picture.jpeg" alt="Immagine profilo" class="profile-pic">
         <div class="profile-main-info">
             <div class="username">{{ username }}</div>
             <div class="invite-bar">
@@ -29,17 +27,14 @@
                 <div class="invite-code" id="invite-code">{{ friend_code }}</div>
                 <button class="copy-btn" type="button" onclick="copyInviteCode()">Copia</button>
             </div>
-            
         </div>
     </div>
-
         <div class="card-section-title">Statistiche</div>
     <div class="stats-card">
         <div class="stat-item">Punteggio: <b>{{ score }}</b></div>
         <div class="stat-item">Domande poste: <b>{{ questions }}</b></div>
         <div class="stat-item">Risposte date: <b>{{ answers }}</b></div>
     </div>
-
     <!-- Titolo sicurezza e card sicurezza -->
     <div class="card-section-title">Sicurezza</div>
     <div class="security-card">
@@ -48,8 +43,6 @@
             <button type="submit" class="logout-btn">Logout</button>
         </form>
     </div>
-    
-
     <script src="/static/js/profile.js"></script>
 </body>
 </html>

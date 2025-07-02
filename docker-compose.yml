@@ -18,6 +18,7 @@ services:
       timeout: 5s
       retries: 10
 
+
   ollama:
     image: ollama/ollama
     container_name: ollama
@@ -27,6 +28,7 @@ services:
       - ./ollama_data:/root/.ollama
     restart: unless-stopped
 
+
   backend:
     build: 
       context: .
@@ -34,8 +36,17 @@ services:
     ports:
       - "8003:8003"
     environment:
-      - E_HOST_DB=mariadb-cinema
-      - E_PORT_DB=3306
+      - MYSQL_HOST=mariadb-cinema
+      - MYSQL_PORT=3306
+      - MYSQL_USER=root
+      - MYSQL_PASSWORD=root
+      - MYSQL_DATABASE=Culture
+      - MYSQL_POOL_SIZE=10
+      - MYSQL_POOL_NAME=CultureAppMariaDBPool
+      - JWT_SECRET_KEY=d8a3f7c9e1b2a4d6f8e0c2b1a3d5e7f9c1b2a4d6f8e0c2b1a3d5e7f9c1b2a4d6
+      - ACCESS_TOKEN_EXPIRE_MINUTES=30
+      - OLLAMA_URL=http://ollama:11434/api
+      - MODEL_NAME=gemma3:1b
     depends_on:
       ollama:
         condition: service_started
@@ -50,7 +61,7 @@ services:
     volumes:
     - ./backend:/app/src/backend
 
-  
+
   frontend:
     build: 
       context: .

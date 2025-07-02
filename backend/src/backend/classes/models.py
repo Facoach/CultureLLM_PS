@@ -2,23 +2,36 @@ from pydantic import BaseModel
 from typing import List
 
 
-#pydantic models
+#Modelli Pydantic
 class RequestLogin(BaseModel):
     username:str
     password:str
 
+class ResponseLogin(BaseModel):
+    username:str
+    id:int
+
+
 class RequestRegister(BaseModel):
     username:str
     password:str
+    repeatpass:str
+    friend_code:str
+
+class ResponseRegister(BaseModel):
+    message:str
      
+
 class RequestAsk(BaseModel):
     question:str
     tema:str
     tab_creation:bool
 
-class ResponseLogin(BaseModel):
-    username:str
-    id:int
+class ResponseAsk(BaseModel):
+    message:str
+    domande:List[list]
+    temi:List
+
 
 class RequestAnswer(BaseModel):
     domanda:str 
@@ -27,27 +40,10 @@ class RequestAnswer(BaseModel):
     tema:str
     tab_creation:bool
 
-class RequestRegister(BaseModel):
-    username:str
-    password:str
-    repeatpass:str
-    friend_code: str
-
 class ResponseAnswer(BaseModel):
     message:str
     payload:List
 
-class ResponseAsk(BaseModel):
-    message:str
-    domande:List[list]
-    temi: List
-
-class ResponseProfile(BaseModel):
-    username:str
-    score: int
-    questions: int
-    answers: int
-    friend_code: str
 
 class RequestValidate(BaseModel):
     questionid:int
@@ -56,22 +52,41 @@ class ResponseValidate(BaseModel):
     message:str
     question:List
     answers:List[list]
-    checked: bool
-    best_answer: str
+    checked:bool
+    best_answer:str
 
-class RequestBest(BaseModel):
-    questionid:int
-    answerid:int
 
 class RequestPassreset(BaseModel):
     newpass:str
+
+class ResponsePassreset(BaseModel):
+    message:str
+
 
 class RequestHuman(BaseModel):
     human:int
     questionid:int
 
+class ResponseHuman(BaseModel):
+    message:str
+
+
+class ResponseCheckNewAnswers(BaseModel):
+    new_answers:list
+
+class ResponseLogout(BaseModel):
+    message:str
+
 class ResponseLeaderboard(BaseModel):
     leaderboard:List
 
-class ResponseHuman(BaseModel):
-    message: str
+class RequestBest(BaseModel):
+    questionid:int
+    answerid:int
+
+class ResponseProfile(BaseModel):
+    username:str
+    score:int
+    questions:int
+    answers:int
+    friend_code:str

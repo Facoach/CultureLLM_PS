@@ -3,12 +3,10 @@
         {% if message %}
         <p class="{{ 'message' if 'successo' in message|lower else 'error-message' }}">{{ message }}</p>
         {% endif %}
-
         <div class="main-question-display">
             {{payload[1] if payload else "Errore: domanda non disponibile."}}
         </div>
     </div>
-
     <div class="answer-form-wrapper">
         <form id="answer-form" action="/answer" method="POST" class="ans-form">
             <input type="text" id="answer" name="answer" required maxlength="255" {% if payload[1]=="Non ci sono ulteriori domande a cui rispondere, vai a porne di nuove!" %} placeholder="Attendi una nuova domanda a cui rispondere!"
@@ -23,7 +21,6 @@
                 <img src="/templates/send.png" alt="Invia" class="send-icon">
             </button>
         </form>
-        
         <form id="refresh-form" action="/answer" method="POST" class="refresh-form-bottom">
             <input type="hidden" id="answer_refresh" name="answer" value="placeholder">
             <input type="hidden" id="domandaid_refresh" name="domandaid" value="{{payload[0]}}">

@@ -1,8 +1,3 @@
-function copyInviteCode() {
-    const code = document.getElementById('invite-code').innerText;
-    navigator.clipboard.writeText(code);
-}
-
 window.addEventListener('pagehide', function(event){
     if(!event.persisted){
         const logoutEndpoint = '/logout'; // Sostituisci con il tuo endpoint di logout effettivo

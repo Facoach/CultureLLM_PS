@@ -1,77 +1,66 @@
-import mariadb
+from mariadb import Connection, Cursor, Error
+from typing import Optional, List
 
-def execute_query_ask(connection:mariadb.Connection,query:str, params: list = None) -> list[list]:
-    """Esegue una query di selezione sul database MariaDB.
 
-    Questa funzione esegue la query fornita sulla connessione specificata in input e
-    restituisce i risultati come lista di liste, dove la prima
-    lista contiene i nomi delle colonne. In caso di errore durante l'esecuzione
-    della query restituisce None.
-
-    Args:
-        connection (mariadb.Connection): L'oggetto di connessione al database MariaDB.
-        query (str): La query SQL di richiesta (tendenzialmente una select) da eseguire.
-
-    Returns:
-        list[list]: Una lista di liste contenente i risultati della query, con la prima lista
-                         che rappresenta le intestazioni delle colonne, le successive contengono 
-                         i dati. Restituisce None se la query non è di interrogazione.
+def execute_query_ask(connection:Connection, query:str, params: list = None) -> Optional[List[list]]:
+    """
+    Esegue una query di selezione sul database MariaDB.
+    La esegue sulla connessione specificata in input e
+    restituisce i risultati come lista di liste, dove la prima lista 
+    contiene i nomi delle colonne, le successive i dati. 
+    Se la query non è di selezione, restituisce None.
     """
     
     if query.startswith(("insert","remove","update")):
         return None
+    
+    # Esegue la query (con o senza parametri), recupera i nomi degli attributi (li salva in "colonne")
+    # e crea la lista da restituire (come sopra descritta)
     try:
-        cursor:mariadb.Cursor = connection.cursor()
-        #esecuzione query, che salva i risultati in "result"
+        cursor:Cursor = connection.cursor()
         if params:
-            cursor.execute(query, params) # Esecuzione della query con parametri
+            cursor.execute(query, params)
         else:
-            cursor.execute(query) # Esecuzione della query senza parametri 
+            cursor.execute(query)
+
         result=cursor.fetchall()
-        colonne=[desc[0] for desc in cursor.description] #recupera i nomi degli attributi e li salva in "colonne"
-        final=[] #inserimento in "final" dei dati di "colonne" e "result"
+        colonne=[desc[0] for desc in cursor.description]
+        final=[]
         final.append(colonne)
         for tupla in result:
             final.append(tupla)
-    except mariadb.Error as e:
+
+    except Error as e:
         print(f"Errore durante l'esecuzione della query: {e}")
         raise
     finally:
-        if cursor:  # Verifica se il cursore è stato creato e lo chiude
+        if cursor:
             cursor.close()
     return final
 
-def execute_query_modify(connection:mariadb.Connection,query:str, params: list = None) -> str:
-    """Esegue una query di aggiunta, modifica o eliminazione sul database MariaDB.
 
-    Esegue la query fornita sulla connessione specificata e restituisce una stringa 
-    "ok" in caso di successo. Se si verifica un errore di integrità a causa di una voce 
-    duplicata, restituisce la stringa "duplicato". In altri casi di errore durante l'esecuzione 
-    della query esegue il rollback dell'operazione e restituisce la stringa "not ok".
-
-    Args:
-        connection (mariadb.Connection): L'oggetto di connessione al database MariaDB.
-        query (str): La query SQL di modifica (tendenzialmente insert, delete o update) da eseguire.
-
-    Returns:
-        str: "ok" se la query è eseguita con successo, "duplicato" se si verifica
-             un errore di chiave duplicata, altrimenti None se la query non è di modifica.
+def execute_query_modify(connection:Connection,query:str, params: list = None) -> Optional[str]:
+    """
+    Esegue una query di aggiunta, modifica o eliminazione sul database MariaDB.
+    La esegue sulla connessione specificata e restituisce "ok" in caso di 
+    successo, None se la query non è di modifica.
     """
 
     if query.startswith(("select")):
         return None
     
     results="ok"
+    # Esegue la query (con o senza parametri)
     try:
-        cursor:mariadb.Cursor = connection.cursor()
+        cursor:Cursor = connection.cursor()
         if params:
-            cursor.execute(query, params) # Esecuzione della query con parametri
+            cursor.execute(query, params)
         else:
-            cursor.execute(query) # Esecuzione della query senza parametri 
-    except mariadb.Error as e:
+            cursor.execute(query)
+    except Error as e:
         print(f"Errore durante l'esecuzione della query: {e}")
         raise
     finally:
-        if cursor:  # Verifica se il cursore è stato creato
+        if cursor:
             cursor.close()
     return results

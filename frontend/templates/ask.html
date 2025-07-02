@@ -1,15 +1,12 @@
 <div class="ask-layout">
-    <!-- DEBUG ogni domanda è del tipo [id, testo, tema, answered, checked]
-    <pre>{{ domande | safe }}</pre> 
-    -->
-    
-    <!---->
+    <!-- Ogni domanda è del tipo [id, testo, tema, answered, checked] -->
     <!-- BLOCCO A SINISTRA CON LE DOMANDE -->
     <div class="ask-sidebar">
         <!-- 1. Domande in lavorazione -->
         <div class="sidebar-section">
             <div class="section-title">In lavorazione</div>
             <div id="pending-questions">
+                
                 <!--Domande che non hanno ricevuto una risposta-->
                 {% set lavorazione = domande | selectattr("3", "equalto", 0) | list %}
                 <!--Hanno ricevuto una risposta ma devono essere valutate-->
@@ -26,7 +23,7 @@
                             <button class="question-title"
                                 onclick="loadValidate('{{item[0]}}', '{{item[4]}}')"
                                 data-questionid="{{item[0]}}">
-                                {{item[1]}}
+                                {{item[2]}}
                                 <span class="notif-dot" style="display:none;"></span>
                             </button>
                         </div>
@@ -47,7 +44,7 @@
                     {% for item in domande_completate %}
                         <div class="question-card in-progress">
                             <button class="question-title" onclick="loadValidate('{{item[0]}}', '{{item[4]}}')">
-                                {{item[1]}}
+                                {{item[2]}}
                             </button>
                         </div>
                     {% endfor %}
@@ -80,14 +77,12 @@
                     {% endfor %}
                 </select>
                 <button type="submit" class="send-btn" {% if max_domande %} disabled {% endif %}>
-                    <img src="/templates/send.png" alt="Invia" class="send-icon">
+                    <img src="/static/img/send.png" alt="Invia" class="send-icon">
                   </button>
             </form>
         </div>
     </div>
     
-    
-
     <!-- BLOCCO A DESTRA CON BOH FORSE CLASSIFICA E STATISTICHE? -->
     <div class="ask-extra">
         <div class="info-card">

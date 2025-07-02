@@ -1,11 +1,9 @@
 <div id="leaderboard-app-container">
     <div class="container">
         <p class="message">{{message}}</p>
-        
         <div class="leaderboard-container">
             <h2>Classifica</h2>
             <ol class="leaderboard-list">
-                
                 {% for entry in leaderboard [:10] %}
                 <li class="leaderboard-item">
                     <span class="rank">{{ loop.index }}°</span>
@@ -15,7 +13,6 @@
                 {% endfor %}
             </ol>
         </div>
-
         <form id="leaderboard-form" action="/get_tab_content/leaderboard" method="GET">
             <button type="submit" class="update-button">Aggiorna leaderboard</button>
         </form>

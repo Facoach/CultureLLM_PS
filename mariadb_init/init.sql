@@ -48,6 +48,7 @@ CREATE TABLE IF NOT EXISTS answers(
 
 );
 
+
 INSERT INTO themes (theme) VALUES
 ("Arte italiana"),
 ("Calcio italiano"),
@@ -69,7 +70,6 @@ INSERT INTO themes (theme) VALUES
 
 INSERT INTO users (id, username, password, score, friend_code) VALUES
 (-1, "IA", "ia", 0, 1);
-
 
 INSERT INTO questions (payload, theme_id, author) VALUES
 ("Quali sono le caratteristiche principali dell'arte rinascimentale italiana?", 1, -1),
