@@ -1,3 +1,12 @@
+#CultureLLM
+
+Questo progetto mira a produrre un'applicazione in cui gli utenti possano porre domande o rispondervi, 
+e poi confrontare le proprie risposte con una IA, sia per la qualità delle risposte, sia nella capacità di individuare 
+quali risposte sono date da altri utenti e quali dalla IA.
+
+
+
+
 Per eseguire il progetto, prima scaricarlo in una cartella
 
 Se sulla macchina non è installato docker-compose, su Linux installarlo con 
