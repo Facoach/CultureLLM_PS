@@ -182,20 +182,16 @@ async def ask(domanda: RequestAsk, user_id: int = Depends(get_current_user_id), 
         
         # Verifica della coerenza della domanda col tema scelto
         data={
-            "model": MODEL_NAME, 
-            "messages":[{
-                "role":"user", 
-                "content":f"ritieni che la domanda {domanda.question} sia coerente col tema {domanda.tema}? Rispondi UNICAMENTE con un voto da 1 a 10 per la coerenza, senza spiegazioni aggiuntive o caratteri non numerici"
-            }], 
-            "stream":False
+            "question": domanda.question,
+            "theme": domanda.tema
         }
-        response= post(f"{OLLAMA_URL}/chat", json=data)
+        response= post(f"http://ai_theme:8075/evaluate", json=data)
         response.raise_for_status()
-        ollama_response = response.json().get("message", "").get("content", "")
-        print(ollama_response)
+        ai_response = response.json()
+        print(ai_response)
 
         # Se il livello di coerenza è almeno 5 la domanda viene accettata
-        if int(ollama_response.strip())>=5:
+        if ai_response["bool"]:
             try:
                 # Recupera l'id del tema scelto, inserisce la domanda nel db
                 # aggiorna il punteggio dell'utente
@@ -485,34 +481,6 @@ async def check_new_answers(user_id: int = Depends(get_current_user_id), db_conn
     question_ids = [q[0] for q in questions]
 
     return ResponseCheckNewAnswers(new_answers = question_ids)
-
-
-@app.on_event("startup")
-def pull() -> None:
-    """Avvia, se non è presente, il download del modello di Ollama"""
-    modello=False
-    # Richiede la lista dei modelli attualmente disponibili su Ollama 
-    # e cerca tra i modelli disponibili quello desiderato
-    try:
-        response= get(f"{OLLAMA_URL}/tags")
-        response.raise_for_status()
-        data=response.json()
-        if "models" in data:
-            for model in data["models"]:
-                if model["name"] == MODEL_NAME:
-                    modello=True
-    except RequestException as e:
-        print(f"Errore durante la comunicazione con l'api di Ollama: {e}")
-        raise
-    # Se il modello non è presente, avvia il download
-    if not modello:
-        data={"model": MODEL_NAME}
-        try:
-            response= post(f"{OLLAMA_URL}/pull", json=data)
-            response.raise_for_status()
-        except RequestException as e:
-            print(f"Errore durante la comunicazione con l'api di Ollama: {e}")
-            raise
 
 
 @app.on_event("startup")

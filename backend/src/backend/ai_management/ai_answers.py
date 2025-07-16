@@ -26,23 +26,31 @@ def process_ai_response(question_payload: str,  db_pool_manager : DatabaseConnec
             print(f"[{thread_name}] Connessione DB acquisita dal pool per la task {i}.")
 
             data={
-                "model": MODEL_NAME,
-                "messages":[{
-                    "role":"user", 
-                    "content":f"{lista_livelli[i]} '{question_payload}'. Non superare i 250 caratteri (spazi inclusi) e restituisci unicamente la risposta"
-                }], 
-                "stream":False
+                "argomento": question_payload,
+                "livello" : i+1
             }
             # Invia la richiesta ed estrare la risposta
-            response = requests.post(f"{OLLAMA_URL}/chat", json=data)
+            response = requests.post(f"http://ai_response:8073/answer", json=data)
             response.raise_for_status()
-            ollama_response = response.json().get("message", "").get("content", "")
-            print(ollama_response)
+            ai_response = response.json()
+            actual_answer=ai_response["risposta"]
+            print(actual_answer)
+
+            data={
+                "llm_response": actual_answer,
+                "level" : 3
+            }
+
+            response = requests.post(f"http://ai_humanization:8074/humanize", json=data)
+            response.raise_for_status()
+            ai_response = response.json()
+            humanized_answer=ai_response["humanized_response"]
+            print(humanized_answer)
 
             # Trova l'id della domanda nel db ed inserisce la risposta nel db
             iddomanda= execute_query_ask(conn, f'select id from questions where payload=%s;', [question_payload])
             transazione = execute_query_modify(conn, 'START TRANSACTION')
-            execute_query_modify(conn, f'insert into answers (payload,question,author) values (%s, %s, %s);', [ollama_response[:255], iddomanda[1][0], -1])
+            execute_query_modify(conn, f'insert into answers (payload,question,author) values (%s, %s, %s);', [humanized_answer[:255], iddomanda[1][0], -1])
             transazione = execute_query_modify(conn, 'COMMIT')
 
         except requests.exceptions.RequestException as e:

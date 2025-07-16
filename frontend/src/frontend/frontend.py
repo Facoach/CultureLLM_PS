@@ -45,7 +45,10 @@ async def make_backend_request(
     :param error_template: Template da mostrare in caso di errore.
     :param redirect_url_on_unauthorized: Redirect se manca token.
     :param template_args: Argomenti extra per il template.
-    :return: HTMLResponse, RedirectResponse o dizionario.
+    :return: Se viene specificato un template restituisce una TemplateResponse (la pagina HTML da mostrare),
+             se il template di ritorno non è specificato restituisce soltanto
+             il JSON ricevuto dal backend.
+             Se l'utente non è autenticato restituisce una RedirectResponse alla pagina di login.
     """
     # Prepara headers e forwarding del cookie di sessione se esiste
     session_token = request.cookies.get("session_token")
@@ -73,6 +76,7 @@ async def make_backend_request(
         final_template_args = {**template_args, **retrieved_data}
         if success_template:
             return templates.TemplateResponse(success_template, {"request": request, **final_template_args})
+        # Se non c'è un template di ritorno restituisce soltanto l'oggetto ricevuto dal backend
         return retrieved_data
     # Gestisce eventuali errori del backend
     except HTTPError as e:

@@ -19,6 +19,56 @@ services:
       timeout: 5s
       retries: 10
 
+  ai_theme:
+    build: 
+      context: .
+      dockerfile: ai_placeholder/ai_theme_placeholder/Dockerfile
+    ports:
+      - "8075:8075"
+    environment:
+      - OLLAMA_URL=http://ollama:11434/api
+      - MODEL_NAME=gemma3:1b
+    restart: always
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8075/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+
+
+  ai_humanization:
+    build: 
+      context: .
+      dockerfile: ai_placeholder/ai_humanization_placeholder/Dockerfile
+    ports:
+      - "8074:8074"
+    environment:
+      - OLLAMA_URL=http://ollama:11434/api
+      - MODEL_NAME=gemma3:1b
+    restart: always
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8074/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+
+
+  ai_response:
+    build: 
+      context: .
+      dockerfile: ai_placeholder/ai_response_placeholder/Dockerfile
+    ports:
+      - "8073:8073"
+    environment:
+      - OLLAMA_URL=http://ollama:11434/api
+      - MODEL_NAME=gemma3:1b
+    restart: always
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8073/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+
 
   ollama:
     image: ollama/ollama
@@ -51,6 +101,12 @@ services:
     depends_on:
       ollama:
         condition: service_started
+      ai_theme:
+        condition: service_healthy
+      ai_response:
+        condition: service_healthy
+      ai_humanization:
+        condition: service_healthy
       mariadb-culture:
         condition: service_healthy
     restart: always
@@ -58,7 +114,7 @@ services:
       test: ["CMD", "curl", "-f", "http://localhost:8003/health"]
       interval: 10s
       timeout: 5s
-      retries: 10
+      retries: 15
 
 
   frontend:
