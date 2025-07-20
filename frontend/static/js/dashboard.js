@@ -1,4 +1,97 @@
 
+function showCustomPopup(message, duration = 3000, width = '300px', height = 'auto') {
+    // Rimuovi eventuali popup esistenti per evitare sovrapposizioni
+    const existingPopup = document.getElementById('customPopup');
+    if (existingPopup) {
+        existingPopup.remove();
+    }
+
+    // Crea l'elemento div per il popup
+    const popup = document.createElement('div');
+    popup.id = 'customPopup';
+    popup.style.position = 'fixed';
+    popup.style.top = '20px';
+    popup.style.left = '50%';
+    popup.style.transform = 'translateX(-50%)';
+    popup.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
+    popup.style.color = 'white';
+    popup.style.padding = '15px 25px';
+    popup.style.borderRadius = '8px';
+    popup.style.zIndex = '10000';
+    popup.style.fontFamily = 'Arial, sans-serif';
+    popup.style.fontSize = '16px';
+    popup.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.2)';
+    popup.style.display = 'flex';
+    popup.style.alignItems = 'center';
+    popup.style.justifyContent = 'space-between'; // Per allineare testo e bottone
+    popup.style.opacity = '0';
+    popup.style.transition = 'opacity 0.5s ease-in-out';
+
+    // *** Nuove proprietà per dimensione fissa ***
+    popup.style.width = width;
+    popup.style.height = height;
+    popup.style.boxSizing = 'border-box'; // Include padding e border nella larghezza/altezza
+    popup.style.overflow = 'auto'; // Aggiunge scrollbar se il contenuto è troppo grande
+
+    // Crea l'elemento span per il messaggio
+    const messageSpan = document.createElement('span');
+    messageSpan.textContent = message;
+    messageSpan.style.flexGrow = '1'; // Permette al testo di occupare lo spazio disponibile
+    popup.appendChild(messageSpan);
+
+    // Crea il pulsante di chiusura
+    const closeButton = document.createElement('button');
+    closeButton.textContent = 'X';
+    closeButton.style.background = 'none';
+    closeButton.style.border = '1px solid white'; // Aggiunto un bordo per visibilità
+    closeButton.style.color = 'white';
+    // *** Regolazioni per bottone più piccolo ***
+    closeButton.style.fontSize = '12px'; // Dimensione del font più piccola
+    closeButton.style.width = '20px';    // Larghezza fissa
+    closeButton.style.height = '20px';   // Altezza fissa
+    closeButton.style.lineHeight = '1';  // Allinea verticalmente la 'X'
+    closeButton.style.display = 'flex';
+    closeButton.style.justifyContent = 'center';
+    closeButton.style.alignItems = 'center';
+    closeButton.style.cursor = 'pointer';
+    closeButton.style.marginLeft = '15px'; // Spazio tra testo e bottone
+    closeButton.style.borderRadius = '50%'; // Rende il bottone rotondo
+    closeButton.style.transition = 'background-color 0.3s ease, border-color 0.3s ease';
+
+    closeButton.onmouseover = () => {
+        closeButton.style.backgroundColor = 'rgba(255, 255, 255, 0.2)';
+        closeButton.style.borderColor = 'white'; // Mantieni il bordo bianco all'hover
+    };
+    closeButton.onmouseout = () => {
+        closeButton.style.backgroundColor = 'none';
+    };
+
+    closeButton.onclick = () => {
+        popup.style.opacity = '0';
+        setTimeout(() => {
+            popup.remove();
+        }, 500);
+        clearTimeout(timer);
+    };
+    popup.appendChild(closeButton);
+
+    // Aggiungi il popup al body della pagina
+    document.body.appendChild(popup);
+
+    // Fai apparire il popup con una transizione
+    setTimeout(() => {
+        popup.style.opacity = '1';
+    }, 10);
+
+    // Imposta il timer per la chiusura automatica
+    const timer = setTimeout(() => {
+        popup.style.opacity = '0';
+        setTimeout(() => {
+            popup.remove();
+        }, 500);
+    }, duration);
+}
+
 // Mappa i nomi dei tab agli endpoint da cui caricare il loro contenuto
 const tabEndpoints = {
     'ask': '/get_tab_content/ask',
@@ -87,6 +180,14 @@ async function handleFormSubmission(event, method) {
         if (tabContentContainer) {
             tabContentContainer.innerHTML = updatedHtml;
             initializeTabForms();
+
+            if (form.action.includes('/answer') && updatedHtml.toLowerCase().includes('risposta aggiunta con successo')) {
+                showCustomPopup("+40 punti saranno assegnati se la tua risposta sarà scelta come migliore");
+            }
+
+            if (form.action.includes('/ask') && updatedHtml.toLowerCase().includes('domanda aggiunta con successo')) {
+                showCustomPopup("+10 punti per aver posto una domanda");
+            }
         }
 
     } catch (error) {
@@ -216,7 +317,7 @@ function loadValidate(questionId) {
             for(let i=0; i<4; i++) {
                 const answer = answers[i];
                 answerBlocks.push(`
-                    <button class="answer-cell" onclick="sendBest(${d.question[0]},${answer[0]},'${id_order_json}')">
+                    <button class="answer-cell" onclick="sendBest(${d.question[0]},${answer[0]},'${id_order_json}'); showCustomPopup('+40 a chi ha dato la risposta')">
                         <div class="answer-title">Risposta ${i + 1}</div>
                         <div class="answer-text">${answer[1]}</div>
                     </button>
@@ -275,14 +376,26 @@ function sendBest(questionId, answerId, id_order_json) {
                 `);
             }
             else {
-                answerBlocks.push(`
-                    <form action="/get_tab_content/ask" method="GET">
-                        <button type= "submit" class="answer-cell" onclick="sendHuman(${answer[2]}, ${d.question[0]})">
-                            <div class="answer-title">Risposta ${i+1}</div>
-                            <div class="answer-text">${answer[1]}</div>
-                        </button>
-                    </form>
-                `);
+                if (answer[2]!=-1){
+                    answerBlocks.push(`
+                        <form action="/get_tab_content/ask" method="GET">
+                            <button type= "submit" class="answer-cell" onclick="sendHuman(${answer[2]}, ${d.question[0]}); showCustomPopup('+10 punti, era la risposta di un utente!')">
+                                <div class="answer-title">Risposta ${i+1}</div>
+                                <div class="answer-text">${answer[1]}</div>
+                            </button>
+                        </form>
+                    `);
+                }
+                else {
+                    answerBlocks.push(`
+                        <form action="/get_tab_content/ask" method="GET">
+                            <button type= "submit" class="answer-cell" onclick="sendHuman(${answer[2]}, ${d.question[0]}); showCustomPopup('Purtroppo era una risposta data da IA')">
+                                <div class="answer-title">Risposta ${i+1}</div>
+                                <div class="answer-text">${answer[1]}</div>
+                            </button>
+                        </form>
+                    `);
+                }
             }
         }
         document.getElementById('chat-view').innerHTML = `
