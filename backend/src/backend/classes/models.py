@@ -71,6 +71,33 @@ class ResponseHuman(BaseModel):
     message:str
 
 
+class AnswerRequest(BaseModel):
+    argomento: str
+    livello:int
+
+class AnswerResponse(BaseModel):
+    risposta: str
+    raw: str
+
+
+class HumanizeRequest(BaseModel):
+    llm_response: str
+    level:int
+
+class HumanizeResponse(BaseModel):
+    humanized_response: str
+    raw: str
+
+
+class EvaluateRequest(BaseModel):
+    question:str
+    theme:str
+
+class EvaluateResponse(BaseModel):
+    bool: str
+    raw: str
+
+
 class ResponseCheckNewAnswers(BaseModel):
     new_answers:list
 

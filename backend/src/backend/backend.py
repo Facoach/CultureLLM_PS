@@ -13,6 +13,7 @@ from random import randint, shuffle
 from requests import get, post
 from requests.exceptions import RequestException
 from threading import Thread
+from ai_management.ai_wrapper import check_theme_coherence, EvaluateRequest
 
 
 # Configurazione parametri JWT
@@ -26,10 +27,6 @@ PASSWORD_DB = getenv("MYSQL_PASSWORD", "root")
 NAME_DB = getenv("MYSQL_DATABASE", "Culture")
 POOL_SIZE = getenv("MYSQL_POOL_SIZE", 10)
 POOL_NAME = getenv("MYSQL_POOL_NAME", "CultureAppMariaDBPool")
-
-# Parametri per il modello di IA (Ollama)
-MODEL_NAME = getenv("MODEL_NAME", "gemma3:1b")
-OLLAMA_URL = getenv("OLLAMA_URL", "http://ollama:11434/api")
 
 # Inizializza il gestore del connection pool, il pool
 # sarà inizializzato formalmente all'evento 'startup' di FastAPI
@@ -181,17 +178,13 @@ async def ask(domanda: RequestAsk, user_id: int = Depends(get_current_user_id), 
             raise HTTPException(status_code=400, detail="La domanda non può essere vuota.")
         
         # Verifica della coerenza della domanda col tema scelto
-        data={
-            "question": domanda.question,
-            "theme": domanda.tema
-        }
-        response= post(f"http://ai_theme:8075/evaluate", json=data)
-        response.raise_for_status()
-        ai_response = response.json()
+        data = EvaluateRequest(question=domanda.question, theme=domanda.tema)
+        ai_response = check_theme_coherence(data)
+        print("AI_RESPONSE IN BACKEND -> ")
         print(ai_response)
 
         # Se il livello di coerenza è almeno 5 la domanda viene accettata
-        if ai_response["bool"]:
+        if ai_response.bool == "Vero":
             try:
                 # Recupera l'id del tema scelto, inserisce la domanda nel db
                 # aggiorna il punteggio dell'utente
@@ -349,7 +342,7 @@ async def answer(risposta: RequestAnswer, user_id: int = Depends(get_current_use
     if risposta.tab_creation==0:
         if not risposta.answer.strip():
             raise HTTPException(status_code=400, detail="La risposta non può essere vuota.")
-        # Inserisce la risposta nel db troncandola a 255 caratteri, aggiorna la domanda come "answered"
+        # Inserisce la risposta nel db troncandola a 511 caratteri, aggiorna la domanda come "answered"
         try:
             execute_query_modify(db_conn, 'START TRANSACTION')
             execute_query_modify(db_conn, f'insert into answers (payload,question,author) values (%s, %s, %s);', [risposta.answer[:511], risposta.domandaid, user_id])

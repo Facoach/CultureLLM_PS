@@ -3,45 +3,31 @@ import mariadb
 import threading
 from classes.database_connection import DatabaseConnection
 from database_management.execute_query import execute_query_modify, execute_query_ask
-
-
-MODEL_NAME = "gemma3:1b" 
-OLLAMA_URL = "http://ollama:11434/api"
-lista_livelli =["rispondi come risponderebbe uno studente di scuola media alla domanda:", "rispondi come risponderebbe uno studente di scuola superiore alla domanda:", "rispondi come risponderebbe un adulto alla domanda:"]
-
+from ai_management.ai_wrapper import generate_answer, AnswerRequest
+from ai_management.ai_wrapper import humanize_response, HumanizeRequest
 
 def process_ai_response(question_payload: str,  db_pool_manager : DatabaseConnection) -> None:
     """
     Funzione edeguita da un thread separato per non bloccare il main thread,
-    interagisce con il modello di IA (Ollama) mandando una richiesta per ogni 
+    interagisce con il modello di IA mandando una richiesta per ogni 
     livello in 'lista_livelli' e salva le risposte nel database.
     """
     thread_name = threading.current_thread().name
-    print(f"[{thread_name}] Avvio elaborazione Ollama")
+    print(f"[{thread_name}] Avvio elaborazione AI")
 
     for i in range(3):
         try:
 
-            data={
-                "argomento": question_payload,
-                "livello" : i+1
-            }
+            data = AnswerRequest(argomento=question_payload, livello=i+1)
             # Invia la richiesta ed estrare la risposta
-            response = requests.post(f"http://ai_response:8073/answer", json=data)
-            response.raise_for_status()
-            ai_response = response.json()
-            actual_answer=ai_response["risposta"]
+            # CONTROLLARE PERCHÈ ORA I LIVELLI SONO DA 1 A 5 MA IL LOOP ARRIVA SOLO A 3
+            ai_response = generate_answer(data)
+            actual_answer = ai_response.risposta
             print(actual_answer)
 
-            data={
-                "llm_response": actual_answer,
-                "level" : 3
-            }
-
-            response = requests.post(f"http://ai_humanization:8074/humanize", json=data)
-            response.raise_for_status()
-            ai_response = response.json()
-            humanized_answer=ai_response["humanized_response"]
+            data = HumanizeRequest(llm_response=actual_answer, level=3)    
+            ai_response = humanize_response(data)
+            humanized_answer = ai_response.humanized_response
             print(humanized_answer)
 
             # Acquisisce una connessione dal pool specificamente per questo thread

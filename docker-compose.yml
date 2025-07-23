@@ -18,67 +18,8 @@ services:
       interval: 10s
       timeout: 5s
       retries: 10
-
-  ai_theme:
-    build: 
-      context: .
-      dockerfile: ai_placeholder/ai_theme_placeholder/Dockerfile
-    ports:
-      - "8075:8075"
-    environment:
-      - OLLAMA_URL=http://ollama:11434/api
-      - MODEL_NAME=gemma3:1b
-    restart: always
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8075/health"]
-      interval: 10s
-      timeout: 5s
-      retries: 20
-
-
-  ai_humanization:
-    build: 
-      context: .
-      dockerfile: ai_placeholder/ai_humanization_placeholder/Dockerfile
-    ports:
-      - "8074:8074"
-    environment:
-      - OLLAMA_URL=http://ollama:11434/api
-      - MODEL_NAME=gemma3:1b
-    restart: always
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8074/health"]
-      interval: 10s
-      timeout: 5s
-      retries: 20
-
-
-  ai_response:
-    build: 
-      context: .
-      dockerfile: ai_placeholder/ai_response_placeholder/Dockerfile
-    ports:
-      - "8073:8073"
-    environment:
-      - OLLAMA_URL=http://ollama:11434/api
-      - MODEL_NAME=gemma3:1b
-    restart: always
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8073/health"]
-      interval: 10s
-      timeout: 5s
-      retries: 20
-
-
-  ollama:
-    image: ollama/ollama
-    container_name: ollama
-    ports:
-      - "11434:11434"
-    volumes:
-      - ./ollama_data:/root/.ollama
-    restart: unless-stopped
-
+    networks:
+      - culturallm
 
   backend:
     build: 
@@ -96,18 +37,13 @@ services:
       - MYSQL_POOL_NAME=CultureAppMariaDBPool
       - JWT_SECRET_KEY=d8a3f7c9e1b2a4d6f8e0c2b1a3d5e7f9c1b2a4d6f8e0c2b1a3d5e7f9c1b2a4d6
       - ACCESS_TOKEN_EXPIRE_MINUTES=30
-      - OLLAMA_URL=http://ollama:11434/api
-      - MODEL_NAME=gemma3:1b
+      - AI_CYAN_URL=http://all_in_one:8071/cyan
+      - AI_MAGENTA_URL=http://all_in_one:8071/magenta
+      - AI_GREEN_QT_URL=http://all_in_one:8071/green_coherence_QT
     depends_on:
-      ollama:
-        condition: service_started
-      ai_theme:
-        condition: service_healthy
-      ai_response:
-        condition: service_healthy
-      ai_humanization:
-        condition: service_healthy
       mariadb-culture:
+        condition: service_healthy
+      all_in_one:
         condition: service_healthy
     restart: always
     healthcheck:
@@ -115,6 +51,8 @@ services:
       interval: 10s
       timeout: 5s
       retries: 15
+    networks:
+      - culturallm
 
 
   frontend:
@@ -129,3 +67,38 @@ services:
       backend:
         condition: service_healthy
     restart: always
+    networks:
+      - culturallm
+
+
+  all_in_one:
+    build:
+      context: ./ia_container
+      dockerfile: Dockerfile
+    image: all_in_one:latest
+    container_name: all_in_one
+    restart: unless-stopped
+    env_file:
+      - ./ia_container/.env
+    volumes:
+      - models_cache:/models_cache
+      - hf_cache:/hf_cache
+    ports:
+      - "8071:8071"
+    networks:
+      - culturallm
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8071/"]
+      interval: 10s
+      timeout: 5s
+      retries: 15
+
+volumes:
+  models_cache:
+    driver: local
+  hf_cache:
+    driver: local
+
+networks:
+  culturallm:
+    driver: bridge
