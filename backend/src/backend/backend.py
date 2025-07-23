@@ -352,7 +352,7 @@ async def answer(risposta: RequestAnswer, user_id: int = Depends(get_current_use
         # Inserisce la risposta nel db troncandola a 255 caratteri, aggiorna la domanda come "answered"
         try:
             execute_query_modify(db_conn, 'START TRANSACTION')
-            execute_query_modify(db_conn, f'insert into answers (payload,question,author) values (%s, %s, %s);', [risposta.answer[:255], risposta.domandaid, user_id])
+            execute_query_modify(db_conn, f'insert into answers (payload,question,author) values (%s, %s, %s);', [risposta.answer[:511], risposta.domandaid, user_id])
             execute_query_modify(db_conn, f'UPDATE questions SET answered=1 WHERE id=%s;', [risposta.domandaid])
             execute_query_modify(db_conn, 'COMMIT')
         # Effettua il rollback in caso di errore

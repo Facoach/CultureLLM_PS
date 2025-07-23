@@ -21,9 +21,6 @@ def process_ai_response(question_payload: str,  db_pool_manager : DatabaseConnec
 
     for i in range(3):
         try:
-            # Acquisisce una connessione dal pool specificamente per questo thread e passa i dati ad Ollama
-            conn = db_pool_manager.get_connection() 
-            print(f"[{thread_name}] Connessione DB acquisita dal pool per la task {i}.")
 
             data={
                 "argomento": question_payload,
@@ -47,10 +44,14 @@ def process_ai_response(question_payload: str,  db_pool_manager : DatabaseConnec
             humanized_answer=ai_response["humanized_response"]
             print(humanized_answer)
 
+            # Acquisisce una connessione dal pool specificamente per questo thread
+            conn = db_pool_manager.get_connection() 
+            print(f"[{thread_name}] Connessione DB acquisita dal pool per la task {i}.")
+
             # Trova l'id della domanda nel db ed inserisce la risposta nel db
             iddomanda= execute_query_ask(conn, f'select id from questions where payload=%s;', [question_payload])
             transazione = execute_query_modify(conn, 'START TRANSACTION')
-            execute_query_modify(conn, f'insert into answers (payload,question,author) values (%s, %s, %s);', [humanized_answer[:255], iddomanda[1][0], -1])
+            execute_query_modify(conn, f'insert into answers (payload,question,author) values (%s, %s, %s);', [humanized_answer[:511], iddomanda[1][0], -1])
             transazione = execute_query_modify(conn, 'COMMIT')
 
         except requests.exceptions.RequestException as e:

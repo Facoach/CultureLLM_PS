@@ -38,7 +38,7 @@ CREATE TABLE IF NOT EXISTS questions(
 
 CREATE TABLE IF NOT EXISTS answers(
         id int AUTO_INCREMENT,
-        payload varchar(256) NOT NULL,
+        payload varchar(512) NOT NULL,
         question int NOT NULL,
         best boolean DEFAULT 0,
         author int NOT NULL,
