@@ -280,3 +280,139 @@ body {
     .profile-card, .stats-card { flex-direction: column; align-items: center; padding: 12px 4px; }
     .profile-pic { width: 60px; height: 60px; }
 }
+
+/* Layout a due colonne centrato */
+.profile-container{
+    max-width: 1600px;
+    width: 100%;
+    margin: 20px auto;
+    /* nudge a destra: più spazio a sinistra, poco a destra */
+    justify-content: flex-end;
+    padding-left: clamp(16px, 18vw, 240px);
+    padding-right: 16px;
+
+    display: flex !important;
+    justify-content: center;   /* mantiene il gruppo centrato nell’area interna */
+    gap: 24px;
+    align-items: flex-start;
+    box-sizing: border-box;
+}
+
+.profile-main {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.profile-sidebar{
+    flex: 0 0 300px;   /* prima 340px: ora è meno wide */
+    min-width: 260px;
+    margin-top: 55px;  /* spostata più in basso */
+}
+/* Titolo sezione nella sidebar: allineamento e margine coerenti */
+.sidebar-title {
+    max-width: 100%;
+    margin: 6px 0 10px 0; /* più compatto in sidebar */
+    text-align: left;
+}
+
+/* Card degli achievements: stesso look di stats/security */
+.achievements-card {
+    background: #37374F;
+    border-radius: 12px;
+    box-shadow: 0 2px 12px #0001;
+    padding: 16px 18px;
+    max-height: 65vh;   /* altezza massima relativa alla viewport */
+    height: 600px;      /* oppure un’altezza fissa */
+    overflow-y: auto;   /* abilita lo scroll verticale */
+    
+    /* --- Nascondi scrollbar --- */
+    scrollbar-width: none;     /* Firefox */
+    -ms-overflow-style: none;  /* IE/Edge */
+}
+.achievements-card::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Opera */
+}
+
+/* Lista achievements */
+.achievements-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.achievement-item {
+    color: #ececec;
+    font-size: 0.98rem;
+    padding: 10px 0;
+    border-bottom: 1px solid #4a4a66;
+}
+
+.achievement-item:last-child {
+    border-bottom: none;
+}
+
+/* Stato "vuoto" */
+.achievements-empty {
+    color: #bdbdd6;
+    font-size: 0.95rem;
+    padding: 4px 0;
+}
+
+@media (max-width: 760px) {   /* prima era 980px */
+    .profile-container { display: block !important; }
+    .profile-sidebar { margin-top: 24px; width: 100%; flex: none; }
+    .sidebar-title { margin-left: auto; margin-right: auto; max-width: 500px; }
+    .achievements-card { max-width: 500px; margin: 0 auto; }
+  }
+  
+  /* Griglia: 2 per riga */
+.achievements-grid{
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px 18px; /* riga, colonna */
+  }
+  
+  /* Slot cerchio + etichetta */
+  .ach-item{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+  
+  /* Cerchio nero di default */
+  .ach-circle{
+    width: 96px;          /* diametro cerchio -> cambia qui la dimensione */
+    height: 96px;
+    border-radius: 50%;
+    background: #0b0b14;  /* nero */
+    border: 2px solid #4a4a66;
+    box-shadow: 0 2px 8px rgba(0,0,0,.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;     /* ritaglia dentro il cerchio */
+  }
+  
+  /* immagine della medaglia, centrata e contenuta */
+  .ach-circle img{
+    width: 90%;
+    height: 90%;
+    object-fit: contain;
+    display: block;
+  }
+  
+  /* Stato sbloccato (contorno/alone) */
+  .ach-circle.achieved{
+    border-color: #a4a4c4;
+    box-shadow: 0 0 0 2px #73739233, 0 2px 8px rgba(0,0,0,.25);
+  }
+  
+  /* etichetta sotto */
+  .ach-label{
+    margin-top: 8px;
+    font-size: 0.85rem;
+    color: #c2c3d3;
+    line-height: 1.2;
+  }
+  

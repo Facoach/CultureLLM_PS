@@ -141,9 +141,10 @@ def register(dati: RequestRegister, db_conn: Connection = Depends(get_db_connect
         
         # Controlla se esiste un utente con tale codice amico ed in tal caso aggiunge 50 punti all'utente che si è registrato
         score = 0
-        ret = execute_query_ask(db_conn, f"SELECT username FROM users WHERE friend_code=%s;", [dati.friend_code])
+        ret = execute_query_ask(db_conn, f"SELECT id FROM users WHERE friend_code=%s;", [dati.friend_code])
         if ret and len(ret)>1:
             score = 50
+
         # Inserimento del nuovo utente nel db con eventuale score aggiuntivo
         execute_query_modify(db_conn, 'START TRANSACTION')
         execute_query_modify(db_conn, f'insert into users (username,password,score,friend_code) values (%s, %s, %s, %s);', [dati.username, dati.password, score, code])
@@ -155,6 +156,25 @@ def register(dati: RequestRegister, db_conn: Connection = Depends(get_db_connect
         raise HTTPException(status_code=500, detail=f"Errore durante la registrazione dell'utente.")
     except HTTPException:
         raise
+    
+    try:
+        execute_query_modify(db_conn, 'START TRANSACTION')
+
+        ret = execute_query_ask(db_conn, f"SELECT id FROM users WHERE friend_code=%s;", [dati.friend_code])
+        if ret and len(ret)>1:
+            #inserimento achievement friend code
+            ach_id=execute_query_ask(db_conn, f'select id from achievements where type=%s;', ["codice_amico"])
+            if len(ach_id) > 1:
+                execute_query_modify(db_conn, f'insert into reached (user,achievement) values (%s, %s);', [ret[1][0], ach_id[1][0]])
+
+            execute_query_modify(db_conn, 'COMMIT')
+    except Error as e:
+        if (e.errno==1062):
+            print("achievement già presente")
+        else:
+            execute_query_modify(db_conn, 'ROLLBACK')
+            print(f"Errore DB durante l'assegnazione di un achievement': {e}")
+            raise HTTPException(status_code=500, detail=f"Errore durante l'assegnazione di un achievement'.")
 
     return ResponseRegister(message = "Registrazione avvenuta con successo")
 
@@ -192,6 +212,13 @@ async def ask(domanda: RequestAsk, user_id: int = Depends(get_current_user_id), 
                 tema_id= execute_query_ask(db_conn, f'select id from themes where theme=%s;', [domanda.tema])
                 execute_query_modify(db_conn, f'insert into questions (payload,theme_id,author) values (%s, %s, %s);', [domanda.question[:255], tema_id[1][0], user_id])
                 execute_query_modify(db_conn, f'UPDATE users SET score = score+10 WHERE id=%s;', [user_id])
+
+                #controllo achievement domande
+                questnum=execute_query_ask(db_conn, f'select count(*) from questions where author=%s;', [user_id])
+                ach_id=execute_query_ask(db_conn, f'select id from achievements where threshold=%s and type=%s;', [questnum[1][0], "domande_poste"])
+                if len(ach_id) > 1:
+                    execute_query_modify(db_conn, f'insert into reached (user,achievement) values (%s, %s);', [user_id, ach_id[1][0]])
+
                 execute_query_modify(db_conn, 'COMMIT')
                 # Avvia l'IA su un thread separato per generare la risposta
                 t = Thread(target=process_ai_response, args=(domanda.question, db_pool_manager))
@@ -204,6 +231,24 @@ async def ask(domanda: RequestAsk, user_id: int = Depends(get_current_user_id), 
                     msg= "Errore durante l'inserimento della domanda"
                 execute_query_modify(db_conn, 'ROLLBACK')
                 print(f"Errore DB durante l'inserimento della domanda: {e}")
+
+            try:
+                execute_query_modify(db_conn, 'START TRANSACTION')
+
+                #controllo achievement punti
+                points=execute_query_ask(db_conn, f'select score from users where id=%s;', [user_id])
+                ach_id1=execute_query_ask(db_conn, f'select id from achievements where type=%s AND %s BETWEEN threshold AND threshold+50;', ["punti", points[1][0]])
+                if len(ach_id1) > 1:
+                    execute_query_modify(db_conn, f'insert into reached (user,achievement) values (%s, %s);', [user_id, ach_id1[1][0]])
+                
+                execute_query_modify(db_conn, 'COMMIT')
+            except Error as e:
+                if (e.errno==1062):
+                    print("achievement già inserito")
+                else:
+                    print(f"Errore DB durante l'inserimento dell'obbiettivo: {e}")
+                    raise HTTPException(status_code=500, detail=f"Errore durante l'inserimento dell'obbiettivo: {e}")
+                
         else:
             msg= "l'IA ritiene che la domanda non sia coerente con il tema"
 
@@ -260,7 +305,7 @@ async def validate(domanda: RequestValidate, db_conn: Connection = Depends(get_d
     return ResponseValidate(message = "Scegli la risposta che ti sembra migliore", question=payload[1], answers=risposte, checked=check[1][0], best_answer=best)
 
 @app.post("/best")
-async def best(data: RequestBest, db_conn: Connection = Depends(get_db_connection)) -> ResponseValidate:
+async def best(data: RequestBest, user_id: int = Depends(get_current_user_id), db_conn: Connection = Depends(get_db_connection)) -> ResponseValidate:
     """
     Marca una risposta come la migliore per una data domanda ed
     aggiorna il punteggio dell'autore della domanda (lo incrementa)
@@ -277,12 +322,39 @@ async def best(data: RequestBest, db_conn: Connection = Depends(get_db_connectio
         execute_query_modify(db_conn, f'UPDATE questions SET checked=1 WHERE id=%s;', [data.questionid])
         execute_query_modify(db_conn, f'UPDATE answers SET best=1 WHERE id=%s;', [data.answerid])
         execute_query_modify(db_conn, f'UPDATE users SET score=score+40 WHERE id in (select author from answers where id=%s);', [data.answerid])
+ 
+        #controllo achievement validazione
+        valnum=execute_query_ask(db_conn, f'select count(*) from questions where author=%s and checked=1;', [user_id])
+        ach_id=execute_query_ask(db_conn, f'select id from achievements where threshold=%s and type=%s;', [valnum[1][0], "domande_valutate"])
+        if len(ach_id) > 1:
+            execute_query_modify(db_conn, f'insert into reached (user,achievement) values (%s, %s);', [user_id, ach_id[1][0]])
+
         execute_query_modify(db_conn, 'COMMIT')
     # Effettua il rollback in caso di errore
     except Error as e:
         execute_query_modify(db_conn, 'ROLLBACK')
         print(f"Errore DB durante la selezione della migliore risposta: {e}")
         raise HTTPException(status_code=500, detail=f"Errore durante l'inserimento della valutazione: {e}")
+    
+    try:
+        execute_query_modify(db_conn, 'START TRANSACTION')
+
+        #controllo achievement punti
+        user=execute_query_ask(db_conn, f'select author from answers where id=%s;', [data.answerid])
+        if len(user)>1:
+            points=execute_query_ask(db_conn, f'select score from users where id=%s;', [user[1][0]])
+            ach_id1=execute_query_ask(db_conn, f'select id from achievements where type=%s AND %s BETWEEN threshold AND threshold+50;', ["punti", points[1][0]])
+            if len(ach_id1) > 1:
+                execute_query_modify(db_conn, f'insert into reached (user,achievement) values (%s, %s);', [user_id, ach_id1[1][0]])
+                
+        execute_query_modify(db_conn, 'COMMIT')
+    except Error as e:
+        if (e.errno==1062):
+            print("achievement già inserito")
+        else:
+            print(f"Errore DB durante l'inserimento dell'obbiettivo: {e}")
+            raise HTTPException(status_code=500, detail=f"Errore durante l'inserimento dell'obbiettivo: {e}")
+        
     # Recupera la domanda aggiornata, il suo stato ("checked" o meno) e tutte le sue risposte 
     try:
         payload = execute_query_ask(db_conn, f'select id, payload from questions where id=%s;', [data.questionid])
@@ -319,6 +391,23 @@ async def human(data: RequestHuman, user_id: int = Depends(get_current_user_id),
             execute_query_modify(db_conn, 'ROLLBACK')
             print(f"Errore DB durante l'aggiornamento del punteggio per il voto umano: {e}")
             raise HTTPException(status_code=500, detail=f"Errore durante l'ottenimento della domanda: {e}")
+        
+        try:
+            execute_query_modify(db_conn, 'START TRANSACTION')
+
+            #controllo achievement punti
+            points=execute_query_ask(db_conn, f'select score from users where id=%s;', [user_id])
+            ach_id1=execute_query_ask(db_conn, f'select id from achievements where type=%s AND %s BETWEEN threshold AND threshold+50;', ["punti", points[1][0]])
+            if len(ach_id1) > 1:
+                execute_query_modify(db_conn, f'insert into reached (user,achievement) values (%s, %s);', [user_id, ach_id1[1][0]])
+                
+            execute_query_modify(db_conn, 'COMMIT')
+        except Error as e:
+            if (e.errno==1062):
+                print("achievement già inserito")
+            else:
+                print(f"Errore DB durante l'inserimento dell'obbiettivo: {e}")
+                raise HTTPException(status_code=500, detail=f"Errore durante l'inserimento dell'obbiettivo: {e}")
 
     return ResponseHuman(message = "Grazie per aver partecipato, bye bye")
 
@@ -347,6 +436,13 @@ async def answer(risposta: RequestAnswer, user_id: int = Depends(get_current_use
             execute_query_modify(db_conn, 'START TRANSACTION')
             execute_query_modify(db_conn, f'insert into answers (payload,question,author) values (%s, %s, %s);', [risposta.answer[:511], risposta.domandaid, user_id])
             execute_query_modify(db_conn, f'UPDATE questions SET answered=1 WHERE id=%s;', [risposta.domandaid])
+
+            #controllo achievement risposte
+            ansnum=execute_query_ask(db_conn, f'select count(*) from answers where author=%s;', [user_id])
+            ach_id=execute_query_ask(db_conn, f'select id from achievements where threshold=%s and type=%s;', [ansnum[1][0], "risposte_date"])
+            if len(ach_id) > 1:
+                execute_query_modify(db_conn, f'insert into reached (user,achievement) values (%s, %s);', [user_id, ach_id[1][0]])
+                
             execute_query_modify(db_conn, 'COMMIT')
         # Effettua il rollback in caso di errore
         except Error as e:
@@ -393,11 +489,16 @@ async def profile(user_id: int = Depends(get_current_user_id), db_conn: Connecti
         userdata=execute_query_ask(db_conn, f'select username, score, friend_code from users where id=%s;', [user_id])
         questnum=execute_query_ask(db_conn, f'select count(*) from questions where author=%s;', [user_id])
         ansnum=execute_query_ask(db_conn, f'select count(*) from answers where author=%s;', [user_id])
+        rows=execute_query_ask(db_conn, f'select achievements.name from reached join achievements on reached.achievement=achievements.id where reached.user=%s;', [user_id]) 
+        rows.pop(0)
+        print("\n\nDEBUG ROWS:\n", rows)
+        objectives = [r[0] for r in rows]
+        print("\nOBJECTIVESSSSSS:",objectives)
     except Error as e:
         print(f"Errore DB nella raccolta dei dati del profilo: {e}")
         raise HTTPException(status_code=500, detail=f"Errore nella raccolta dei dati: {e}")
 
-    return ResponseProfile(username=userdata[1][0], score=userdata[1][1], questions=questnum[1][0], answers= ansnum[1][0], friend_code= userdata[1][2])
+    return ResponseProfile(username=userdata[1][0], score=userdata[1][1], questions=questnum[1][0], answers= ansnum[1][0], friend_code= userdata[1][2], achievements=objectives)
 
 
 @app.post("/passreset")

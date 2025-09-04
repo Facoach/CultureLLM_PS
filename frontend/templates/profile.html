@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Profilo</title>
-    <link rel="stylesheet" href="/static/css/profile.css">
+    <link rel="stylesheet" href="/static/css/profile.css?v=2">
+
 </head>
 <body>
     <!-- Banner con i bottoni per ogni tab -->
@@ -21,44 +22,96 @@
             </form>
         </div>
     </nav>
-    <div class="profile-title">Profilo</div>
-     <!-- Card contentente le informazioni principali dell'utente -->
-    <div class="profile-card">
-         <!-- Immagine profilo -->
-        <img src="/static/img/profile_picture.jpeg" alt="Immagine profilo" class="profile-pic">
-        <div class="profile-main-info">
-            <!-- Username -->
-            <div class="username">{{ username }}</div>
-            <!-- Codice invito con bottone per copiarlo sugli appunti e messaggio informativo -->
-            <div class="invite-bar">
-                <div class="invite-row">
-                    <div class="invite-label">Link Invito</div>
-                    <div class="invite-code" id="invite-code">{{ friend_code }}</div>
-                    <button class="copy-btn" type="button" onclick="copyInviteCode()">Copia</button>
-                </div>
-                <div class="invite-info">
-                    Chi si registra con questo codice riceverà 50 punti
+
+    <div class="profile-container">
+
+        <!-- Sezione principale del profilo -->
+        <div class="profile-main">
+            <div class="profile-title">Profilo</div>
+            <!-- Card contentente le informazioni principali dell'utente -->
+            <div class="profile-card">
+                <!-- Immagine profilo -->
+                <img src="/static/img/profile_picture.jpeg" alt="Immagine profilo" class="profile-pic">
+                <div class="profile-main-info">
+                    <!-- Username -->
+                    <div class="username">{{ username }}</div>
+                    <!-- Codice invito con bottone per copiarlo sugli appunti e messaggio informativo -->
+                    <div class="invite-bar">
+                        <div class="invite-row">
+                            <div class="invite-label">Link Invito</div>
+                            <div class="invite-code" id="invite-code">{{ friend_code }}</div>
+                            <button class="copy-btn" type="button" onclick="copyInviteCode()">Copia</button>
+                        </div>
+                        <div class="invite-info">
+                            Chi si registra con questo codice riceverà 50 punti
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div>
-    </div>
 
-    <!-- Sezione statistiche -->
-    <div class="card-section-title">Statistiche</div>
-    <div class="stats-card">
-        <div class="stat-item">Punteggio: <b>{{ score }}</b></div>
-        <div class="stat-item">Domande poste: <b>{{ questions }}</b></div>
-        <div class="stat-item">Risposte date: <b>{{ answers }}</b></div>
-    </div>
-    
-    <!-- Sezione sicurezza -->
-    <div class="card-section-title">Sicurezza</div>
-    <div class="security-card">
-        <!-- Link a reset password e form di logout -->
-        <a href="/directpassreset" class="resetpass-btn">Cambia password</a>
-        <form action="/logout" method="POST" class="logout-form-inside">
-            <button type="submit" class="logout-btn">Logout</button>
-        </form>
+            <!-- Sezione statistiche -->
+            <div class="card-section-title">Statistiche</div>
+            <div class="stats-card">
+                <div class="stat-item">Punteggio: <b>{{ score }}</b></div>
+                <div class="stat-item">Domande poste: <b>{{ questions }}</b></div>
+                <div class="stat-item">Risposte date: <b>{{ answers }}</b></div>
+            </div>
+            
+            <!-- Sezione sicurezza -->
+            <div class="card-section-title">Sicurezza</div>
+            <div class="security-card">
+                <!-- Link a reset password e form di logout -->
+                <a href="/directpassreset" class="resetpass-btn">Cambia password</a>
+                <form action="/logout" method="POST" class="logout-form-inside">
+                    <button type="submit" class="logout-btn">Logout</button>
+                </form>
+            </div>  
+        </div>
+
+        <!-- SideBar achievements -->
+        <div class="profile-sidebar">
+            <div class="card-section-title sidebar-title">Achievements</div>
+            <!-- DEBUG achievements: {{ achievements }} -->
+            <div class="achievements-card">
+                {% set all_achievements = [
+                  'Domandatore novizio','Domandatore abile','Domandatore esperto',
+                  'Risponditore novizio','Risponditore abile','Risponditore esperto',
+                  'Amico',
+                  'Valutatore novizio','Valutatore abile','Valutatore esperto',
+                  'Giocatore novizio','Giocatore abile','Giocatore esperto'
+                ] %}
+              
+                {% set unlocked_lower = (achievements|map('lower')|list) if achievements else [] %}
+              
+                <div class="achievements-grid">
+                  {% for name in all_achievements %}
+                    {% set lname = name|lower %}
+                    {% set unlocked = lname in unlocked_lower %}
+              
+                    {# scegli la medaglia in base al livello #}
+                    {% set badge = 'Gold.png' %}
+                    {% if 'novizio' in lname %}
+                      {% set badge = 'Bronze.png' %}
+                    {% elif 'abile' in lname %}
+                      {% set badge = 'Silver.png' %}
+                    {% elif 'esperto' in lname %}
+                      {% set badge = 'Gold.png' %}
+                    {% endif %}
+              
+                    <div class="ach-item">
+                      <div class="ach-circle {% if unlocked %}achieved{% endif %}">
+                        {% if unlocked %}
+                          <img src="/static/img/{{ badge }}" alt="{{ name }}">
+                        {% endif %}
+                      </div>
+                      <div class="ach-label">{{ name }}</div>
+                    </div>
+                  {% endfor %}
+                </div>
+              </div>
+              
+        </div>
+
     </div>
     <script src="/static/js/profile.js"></script>
 </body>

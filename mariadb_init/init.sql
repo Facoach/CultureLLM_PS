@@ -8,6 +8,15 @@ CREATE TABLE IF NOT EXISTS themes(
 
 );
 
+CREATE TABLE IF NOT EXISTS achievements(
+        id int AUTO_INCREMENT,
+        name varchar(64) NOT NULL,
+        type varchar(64) NOT NULL,
+        threshold int (64) NOT NULL,
+        PRIMARY KEY(id)
+
+);
+
 CREATE TABLE IF NOT EXISTS users(
         id int AUTO_INCREMENT,
         username varchar(128) NOT NULL,
@@ -45,6 +54,15 @@ CREATE TABLE IF NOT EXISTS answers(
         PRIMARY KEY(id),
         FOREIGN KEY (question) REFERENCES questions(id),
         FOREIGN KEY (author) REFERENCES users(id)
+
+);
+
+CREATE TABLE IF NOT EXISTS reached(
+        user int NOT NULL,
+        achievement int NOT NULL,
+        PRIMARY KEY (user,achievement),
+        FOREIGN KEY (user) REFERENCES users(id),
+        FOREIGN KEY (achievement) REFERENCES achievements(id)
 
 );
 
@@ -89,3 +107,19 @@ INSERT INTO questions (payload, theme_id, author) VALUES
 ("Chi era Galileo Galilei e quale fu il suo contributo alla scienza?", 15, -1),
 ("Qual è lo sport più praticato in Italia oltre al calcio?", 16, -1),
 ("Quale evento segnò l'inizio della Repubblica Italiana?", 17, -1);
+
+
+INSERT INTO achievements (name, type, threshold) VALUES
+("Domandatore novizio", "domande_poste", 10),
+("Domandatore abile", "domande_poste", 50),
+("Domandatore esperto", "domande_poste", 100),
+("Risponditore novizio", "risposte_date", 25),
+("Risponditore abile", "risposte_date", 75),
+("Risponditore esperto", "risposte_date", 150),
+("Amico", "codice_amico", 1),
+("Valutatore novizio", "domande_valutate", 10), 
+("Valutatore abile", "domande_valutate", 50),
+("Valutatore esperto", "domande_valutate", 100),
+("Giocatore novizio", "punti", 100),
+("Giocatore abile", "punti", 500),
+("Giocatore esperto", "punti", 1000);

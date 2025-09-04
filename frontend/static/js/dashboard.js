@@ -27,10 +27,10 @@ function showCustomPopup(message, duration = 3000, width = '300px', height = 'au
     popup.style.opacity = '0';
     popup.style.transition = 'opacity 0.5s ease-in-out';
 
-    // *** Nuove proprietà per dimensione fissa ***
+    // *** proprietà per dimensione fissa ***
     popup.style.width = width;
     popup.style.height = height;
-    popup.style.boxSizing = 'border-box'; // Include padding e border nella larghezza/altezza
+    popup.style.boxSizing = 'border-box'; 
     popup.style.overflow = 'auto'; // Aggiunge scrollbar se il contenuto è troppo grande
 
     // Crea l'elemento span per il messaggio
@@ -43,10 +43,9 @@ function showCustomPopup(message, duration = 3000, width = '300px', height = 'au
     const closeButton = document.createElement('button');
     closeButton.textContent = 'X';
     closeButton.style.background = 'none';
-    closeButton.style.border = '1px solid white'; // Aggiunto un bordo per visibilità
+    closeButton.style.border = '1px solid white';
     closeButton.style.color = 'white';
-    // *** Regolazioni per bottone più piccolo ***
-    closeButton.style.fontSize = '12px'; // Dimensione del font più piccola
+    closeButton.style.fontSize = '12px'; // Dimensione del font
     closeButton.style.width = '20px';    // Larghezza fissa
     closeButton.style.height = '20px';   // Altezza fissa
     closeButton.style.lineHeight = '1';  // Allinea verticalmente la 'X'
@@ -60,7 +59,7 @@ function showCustomPopup(message, duration = 3000, width = '300px', height = 'au
 
     closeButton.onmouseover = () => {
         closeButton.style.backgroundColor = 'rgba(255, 255, 255, 0.2)';
-        closeButton.style.borderColor = 'white'; // Mantieni il bordo bianco all'hover
+        closeButton.style.borderColor = 'white';
     };
     closeButton.onmouseout = () => {
         closeButton.style.backgroundColor = 'none';

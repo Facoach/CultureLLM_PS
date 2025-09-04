@@ -117,3 +117,4 @@ class ResponseProfile(BaseModel):
     questions:int
     answers:int
     friend_code:str
+    achievements:List
