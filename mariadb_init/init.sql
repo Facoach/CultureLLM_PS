@@ -1,4 +1,10 @@
 CREATE DATABASE IF NOT EXISTS Culture;
+
+CREATE USER 'user'@'%' IDENTIFIED BY 'cultura_italiana';
+GRANT SELECT, INSERT, UPDATE ON `Culture`.* TO 'user'@'%';
+FLUSH PRIVILEGES;
+
+
 USE Culture
 
 CREATE TABLE IF NOT EXISTS themes(

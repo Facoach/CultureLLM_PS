@@ -23,8 +23,8 @@ ACCESS_TOKEN_EXPIRE_MINUTES = int(getenv("ACCESS_TOKEN_EXPIRE_MINUTES", 30))
 # Parametri per la connessione al db
 HOST_DB = getenv("MYSQL_HOST", "localhost")
 PORT_DB = getenv("MYSQL_PORT", 3307)
-USER_DB = getenv("MYSQL_USER", "root")
-PASSWORD_DB = getenv("MYSQL_PASSWORD", "root")
+USER_DB = getenv("MYSQL_USER", "user")
+PASSWORD_DB = getenv("MYSQL_PASSWORD", "cultura_italiana")
 NAME_DB = getenv("MYSQL_DATABASE", "Culture")
 POOL_SIZE = getenv("MYSQL_POOL_SIZE", 10)
 POOL_NAME = getenv("MYSQL_POOL_NAME", "CultureAppMariaDBPool")
@@ -494,7 +494,7 @@ async def profile(user_id: int = Depends(get_current_user_id), db_conn: Connecti
     :return: Oggetto ResponseProfile con dati utente, numero domande e risposte.
     :raises HTTPException: Se si verifica un errore nel DB.
     """
-    # Recupera username, punteggio e codice amico dell'utente autenticato,
+    # Recupera username, punteggio, obbiettivi e codice amico dell'utente autenticato,
     # e conta il numero di domande/risposte poste/date dall'utente 
     try:
         userdata=execute_query_ask(db_conn, f'select username, score, friend_code from users where id=%s;', [user_id])
@@ -504,7 +504,7 @@ async def profile(user_id: int = Depends(get_current_user_id), db_conn: Connecti
         rows.pop(0)
         print("\n\nDEBUG ROWS:\n", rows)
         objectives = [r[0] for r in rows]
-        print("\nOBJECTIVESSSSSS:",objectives)
+        print("\nOBJECTIVES:",objectives)
     except Error as e:
         print(f"Errore DB nella raccolta dei dati del profilo: {e}")
         raise HTTPException(status_code=500, detail=f"Errore nella raccolta dei dati: {e}")
