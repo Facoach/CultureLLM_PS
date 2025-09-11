@@ -91,7 +91,7 @@ services:
       test: ["CMD", "curl", "-f", "http://localhost:8071/"]
       interval: 10s
       timeout: 5s
-      retries: 15
+      retries: 20
 
 volumes:
   models_cache:

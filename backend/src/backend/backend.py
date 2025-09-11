@@ -1,9 +1,8 @@
 from classes.models import ResponseCheckNewAnswers, ResponseLogout, ResponsePassreset, ResponseRegister, ResponseHuman, RequestLogin, RequestRegister, ResponseLogin, RequestAsk, RequestAnswer, ResponseAsk, ResponseAnswer, ResponseProfile, RequestValidate, ResponseLeaderboard, ResponseValidate, RequestHuman, RequestBest, RequestPassreset
-from classes.database_connection import DatabaseConnection
+from classes.database_connection import DatabaseConnection, DBPoolManager
 from database_management.execute_query import execute_query_modify, execute_query_ask
 from ai_management.ai_answers import process_ai_response 
 from utils.jwt_utils import create_access_token
-from utils.db_utils import DBPoolManager
 from utils.generic_utils import get_question, get_current_user_id
 from os import getenv
 from sys import exit
@@ -14,10 +13,12 @@ from requests import get, post
 from requests.exceptions import RequestException
 from threading import Thread
 from ai_management.ai_wrapper import check_theme_coherence, EvaluateRequest
+from passlib.context import CryptContext
 
 
 # Configurazione parametri JWT
 ACCESS_TOKEN_EXPIRE_MINUTES = int(getenv("ACCESS_TOKEN_EXPIRE_MINUTES", 30))
+
 
 # Parametri per la connessione al db
 HOST_DB = getenv("MYSQL_HOST", "localhost")
@@ -27,6 +28,9 @@ PASSWORD_DB = getenv("MYSQL_PASSWORD", "root")
 NAME_DB = getenv("MYSQL_DATABASE", "Culture")
 POOL_SIZE = getenv("MYSQL_POOL_SIZE", 10)
 POOL_NAME = getenv("MYSQL_POOL_NAME", "CultureAppMariaDBPool")
+
+#variabile per la crittografia password
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 # Inizializza il gestore del connection pool, il pool
 # sarà inizializzato formalmente all'evento 'startup' di FastAPI
@@ -68,7 +72,7 @@ async def login(dati: RequestLogin, response: Response, db_conn: Connection = De
 
     # Verifica se le credenziali sono corrette (No ad accesso con id -1 che appartiene all'IA, ecc...)
     try:
-        utente_raw = execute_query_ask(db_conn, f"select id, username from users where username=%s and password=%s;", [dati.username, dati.password])
+        utente_raw = execute_query_ask(db_conn, f"select id, username, password from users where username=%s;", [dati.username])
     except Error as e:
         raise HTTPException(status_code=500, detail="Errore del server durante il login.")
     
@@ -77,6 +81,10 @@ async def login(dati: RequestLogin, response: Response, db_conn: Connection = De
 
     user_id = utente_raw[1][0]
     username = utente_raw[1][1]
+    hashed_password = utente_raw[1][2]
+
+    if not pwd_context.verify(dati.password, hashed_password):
+        raise HTTPException(status_code=401, detail="Nome utente o password errati.")
 
     # Crea il token JWT con l'ID utente ed imposta il cookie nella risposta
     access_token = create_access_token(data={"sub": str(user_id)})
@@ -108,6 +116,9 @@ def register(dati: RequestRegister, db_conn: Connection = Depends(get_db_connect
 
     if dati.password != dati.repeatpass:
         raise HTTPException(status_code=422, detail="Le due password non coincidono")
+
+    #hash della password prima di inserirla
+    hashed_password = pwd_context.hash(dati.password)
 
     try:
         # Verifica se lo username esiste già
@@ -147,7 +158,7 @@ def register(dati: RequestRegister, db_conn: Connection = Depends(get_db_connect
 
         # Inserimento del nuovo utente nel db con eventuale score aggiuntivo
         execute_query_modify(db_conn, 'START TRANSACTION')
-        execute_query_modify(db_conn, f'insert into users (username,password,score,friend_code) values (%s, %s, %s, %s);', [dati.username, dati.password, score, code])
+        execute_query_modify(db_conn, f'insert into users (username,password,score,friend_code) values (%s, %s, %s, %s);', [dati.username, hashed_password, score, code])
         execute_query_modify(db_conn, 'COMMIT')
     except Error as e:
         # Effettua il rollback in caso di errore e lo logga per debug
@@ -512,10 +523,14 @@ async def passreset(password: RequestPassreset, user_id: int = Depends(get_curre
     :return: Oggetto ResponsePassreset con messaggio di successo.
     :raises HTTPException: Se si verifica un errore nel DB.
     """
+
+    #hash della password prima di inserirla
+    hashed_password = pwd_context.hash(password.newpass)
+
     # Aggiorna la password dell'utente corrente
     try:
         execute_query_modify(db_conn, 'START TRANSACTION')
-        execute_query_modify(db_conn, f'UPDATE users SET password=%s WHERE id=%s;', [password.newpass, user_id])
+        execute_query_modify(db_conn, f'UPDATE users SET password=%s WHERE id=%s;', [hashed_password, user_id])
         execute_query_modify(db_conn, 'COMMIT')
     # Effettua il rollback in caso di errrore
     except Error as e:

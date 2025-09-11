@@ -20,7 +20,7 @@ CREATE TABLE IF NOT EXISTS achievements(
 CREATE TABLE IF NOT EXISTS users(
         id int AUTO_INCREMENT,
         username varchar(128) NOT NULL,
-        password varchar(128) NOT NULL,
+        password varchar(256) NOT NULL,
         score int NOT NULL DEFAULT 0,
         friend_code varchar(128) NOT NULL,
         PRIMARY KEY(id),
