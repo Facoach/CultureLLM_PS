@@ -42,7 +42,7 @@ CREATE TABLE IF NOT EXISTS questions(
         theme_id int NOT NULL,
         answered boolean DEFAULT 0,
         checked boolean DEFAULT 0,
-        is_answering boolean DEFAULT 0,
+        is_answering int DEFAULT 0,
         author int NOT NULL,
         PRIMARY KEY(id),
         UNIQUE(payload),

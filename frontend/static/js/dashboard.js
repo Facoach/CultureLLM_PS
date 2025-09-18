@@ -271,11 +271,10 @@ document.addEventListener('DOMContentLoaded', () => {
 function loadValidate(questionId) {
     fetch('/validate', {
         method: 'POST',
-        headers: {'Content-Type':'application/x-www-form-urlencoded'},
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         body: `questionid=${questionId}`
     })
     .then(r => {
-        // Se la risposta è una redirect al login, reindirizza
         if (r.url.includes('/directlogin')) {
             window.location.href = '/directlogin?message=Token scaduto o assente';
             return;
@@ -283,58 +282,101 @@ function loadValidate(questionId) {
         return r.json();
     })
     .then(d => {
+        const chatView = document.getElementById('chat-view');
+        chatView.innerHTML = ''; // Pulisce il contenuto precedente
+
         const answers = d.answers || [];
-        // Lista che contiene gli id nell'ordine in cui si trovano in 
-        //answers dopo lo shuffle, con successivo encoding
-        let id_order = answers.map(x => x[0]);
+        const id_order = answers.map(x => x[0]);
         const id_order_json = encodeURIComponent(JSON.stringify(id_order));
-        // Se è stata già valutata mostra solo la domanda e la risposta scelta come migliore
-        if(d.checked == 1) {
-            document.getElementById('chat-view').innerHTML = `
-                <div class="question-main">
-                    <div class="main-question">${d.question[1]}</div>
-                </div>
-                <div class="best-answer-block">
-                    <div class="best-title">Risposta migliore</div>
-                    <div class="best-answer">${answers.length > 0 ? d.best_answer : "<em>Non disponibile</em>"}</div>
-                </div>
-            `;
-        // Se non ci sono ancora tutte e 4 le risposte mostra un messaggio di attesa
-        } else if(answers.length < 4) {
-            document.getElementById('chat-view').innerHTML = `
-                <div class="question-main">
-                    <div class="main-question">${d.question[1]}</div>
-                </div>
-                <div class="waiting-message">
-                    <span>In attesa delle risposte...</span>
-                </div>
-            `;
-        } 
-        // Mostra le 4 risposte come bottoni per scegliere la migliore
-        else {
-            const answerBlocks = [];
-            for(let i=0; i<4; i++) {
-                const answer = answers[i];
-                answerBlocks.push(`
-                    <button class="answer-cell" onclick="sendBest(${d.question[0]},${answer[0]},'${id_order_json}'); showCustomPopup('+40 a chi ha dato la risposta')">
-                        <div class="answer-title">Risposta ${i + 1}</div>
-                        <div class="answer-text">${answer[1]}</div>
-                    </button>
-                `);
+
+        // Contenitore principale della domanda
+        const questionMain = document.createElement('div');
+        questionMain.className = 'question-main';
+
+        const mainQuestion = document.createElement('div');
+        mainQuestion.className = 'main-question';
+        mainQuestion.textContent = d.question[1]; // ✅ Sicuro
+
+        questionMain.appendChild(mainQuestion);
+        chatView.appendChild(questionMain);
+
+        if (d.checked == 1) {
+            // Se è già stata valutata, mostra solo la risposta migliore
+            const bestBlock = document.createElement('div');
+            bestBlock.className = 'best-answer-block';
+
+            const bestTitle = document.createElement('div');
+            bestTitle.className = 'best-title';
+            bestTitle.textContent = 'Risposta migliore';
+
+            const bestAnswer = document.createElement('div');
+            bestAnswer.className = 'best-answer';
+
+            if (answers.length > 0) {
+                bestAnswer.textContent = d.best_answer; // ✅ Sicuro
+            } else {
+                const em = document.createElement('em');
+                em.textContent = 'Non disponibile';
+                bestAnswer.appendChild(em);
             }
-            document.getElementById('chat-view').innerHTML = `
-                <div class="question-main">
-                    <div class="main-question">${d.question[1]}</div>
-                    <div class="sub-message">Scegli la risposta migliore tra quelle proposte:</div>
-                </div>
-                <div class="answers-grid">
-                    ${answerBlocks.join('')}
-                </div>
-            `;
+
+            bestBlock.appendChild(bestTitle);
+            bestBlock.appendChild(bestAnswer);
+            chatView.appendChild(bestBlock);
         }
+
+        else if (answers.length < 4) {
+            // Messaggio di attesa
+            const waitingMessage = document.createElement('div');
+            waitingMessage.className = 'waiting-message';
+
+            const span = document.createElement('span');
+            span.textContent = 'In attesa delle risposte...';
+            waitingMessage.appendChild(span);
+
+            chatView.appendChild(waitingMessage);
+        }
+
+        else {
+            // Mostra le risposte per la selezione
+            const subMessage = document.createElement('div');
+            subMessage.className = 'sub-message';
+            subMessage.textContent = 'Scegli la risposta migliore tra quelle proposte:';
+            questionMain.appendChild(subMessage);
+
+            const answersGrid = document.createElement('div');
+            answersGrid.className = 'answers-grid';
+
+            for (let i = 0; i < 4; i++) {
+                const answer = answers[i];
+
+                const button = document.createElement('button');
+                button.className = 'answer-cell';
+                button.onclick = () => {
+                    sendBest(d.question[0], answer[0], id_order_json);
+                    showCustomPopup('+40 a chi ha dato la risposta');
+                };
+
+                const title = document.createElement('div');
+                title.className = 'answer-title';
+                title.textContent = `Risposta ${i + 1}`;
+
+                const text = document.createElement('div');
+                text.className = 'answer-text';
+                text.textContent = answer[1]; // ✅ Sicuro
+
+                button.appendChild(title);
+                button.appendChild(text);
+                answersGrid.appendChild(button);
+            }
+
+            chatView.appendChild(answersGrid);
+        }
+
     })
     .catch(err => console.error(err));
 }
+
 
 
 //  Gestisce la scelta da parte dell'utente di quale sia la rispostsa umana
@@ -342,11 +384,10 @@ function loadValidate(questionId) {
 function sendBest(questionId, answerId, id_order_json) {
     fetch('/best', {
         method: 'POST',
-        headers: {'Content-Type':'application/x-www-form-urlencoded'},
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         body: `questionid=${questionId}&answerid=${answerId}`
     })
     .then(r => {
-        // Se la risposta è una redirect al login, reindirizza
         if (r.url.includes('/directlogin')) {
             window.location.href = '/directlogin?message=Token scaduto o assente';
             return;
@@ -355,61 +396,89 @@ function sendBest(questionId, answerId, id_order_json) {
     })
     .then(d => {
         const answers = d.answers || [];
-        // Parsa la lista degli id in ordine (shuffled) ad un array
+
         let id_order = [];
         if (typeof id_order_json === "string") {
             id_order = JSON.parse(decodeURIComponent(id_order_json));
         }
-        // Sorta answers seguendo l'ordine degli id nella lista in_order (per mantenere lo shuffle)
+
         answers.sort((a, b) => id_order.indexOf(a[0]) - id_order.indexOf(b[0]));
-        // Prepara i blocchi risposta (alcuni potrebbero essere in attesa)
-        const answerBlocks = [];
-        for(let i=0; i<4; i++) {
+
+        const chatView = document.getElementById('chat-view');
+        chatView.innerHTML = ''; // Pulisce il contenuto precedente
+
+        // Sezione della domanda principale
+        const questionMain = document.createElement('div');
+        questionMain.className = 'question-main';
+
+        const mainQuestion = document.createElement('div');
+        mainQuestion.className = 'main-question';
+        mainQuestion.textContent = d.question[1]; // Protezione XSS
+
+        const subMessage = document.createElement('div');
+        subMessage.className = 'sub-message';
+        subMessage.textContent = 'Ora indica quale risposta pensi sia scritta da un umano:';
+
+        questionMain.appendChild(mainQuestion);
+        questionMain.appendChild(subMessage);
+        chatView.appendChild(questionMain);
+
+        // Sezione delle risposte
+        const answersGrid = document.createElement('div');
+        answersGrid.className = 'answers-grid';
+
+        for (let i = 0; i < 4; i++) {
             const answer = answers[i];
+
+            const form = document.createElement('form');
+            form.action = "/get_tab_content/ask";
+            form.method = "GET";
+
+            const button = document.createElement('button');
+            button.type = "submit";
+            button.className = answer ? "answer-cell" : "answer-cell disabled";
+
+            const title = document.createElement('div');
+            title.className = 'answer-title';
+            title.textContent = `Risposta ${i + 1}`;
+
+            const text = document.createElement('div');
+            text.className = 'answer-text';
+
             if (!answer) {
-                answerBlocks.push(`
-                    <div class="answer-cell disabled">
-                        <div class="answer-title">Risposta ${i+1}</div>
-                        <div class="answer-text pending"><em>In attesa...</em></div>
-                    </div>
-                `);
-            }
-            else {
-                if (answer[2]!=-1){
-                    answerBlocks.push(`
-                        <form action="/get_tab_content/ask" method="GET">
-                            <button type= "submit" class="answer-cell" onclick="sendHuman(${answer[2]}, ${d.question[0]}); showCustomPopup('+10 punti, era la risposta di un utente!')">
-                                <div class="answer-title">Risposta ${i+1}</div>
-                                <div class="answer-text">${answer[1]}</div>
-                            </button>
-                        </form>
-                    `);
-                }
-                else {
-                    answerBlocks.push(`
-                        <form action="/get_tab_content/ask" method="GET">
-                            <button type= "submit" class="answer-cell" onclick="sendHuman(${answer[2]}, ${d.question[0]}); showCustomPopup('Purtroppo era una risposta data da IA')">
-                                <div class="answer-title">Risposta ${i+1}</div>
-                                <div class="answer-text">${answer[1]}</div>
-                            </button>
-                        </form>
-                    `);
+                text.classList.add('pending');
+                const em = document.createElement('em');
+                em.textContent = 'In attesa...';
+                text.appendChild(em);
+            } else {
+                text.textContent = answer[1]; // Protezione XSS
+
+                // Imposta l'onclick
+                if (answer[2] !== -1) {
+                    button.onclick = () => {
+                        sendHuman(answer[2], d.question[0]);
+                        showCustomPopup('+10 punti, era la risposta di un utente!');
+                    };
+                } else {
+                    button.onclick = () => {
+                        sendHuman(answer[2], d.question[0]);
+                        showCustomPopup('Purtroppo era una risposta data da IA');
+                    };
                 }
             }
+
+            button.appendChild(title);
+            button.appendChild(text);
+            form.appendChild(button);
+            answersGrid.appendChild(form);
         }
-        document.getElementById('chat-view').innerHTML = `
-            <div class="question-main">
-                <div class="main-question">${d.question[1]}</div>
-                <div class="sub-message">Ora indica quale risposta pensi sia scritta da un umano:</div>
-            </div>
-            <div class="answers-grid">
-                ${answerBlocks.join('')}
-            </div>
-        `;
+
+        chatView.appendChild(answersGrid);
         initializeTabForms();
     })
     .catch(err => console.error(err));
 }
+
 
 
 // Dopo la scelta della risposta "umana", mostra solo il messaggio di conferma
