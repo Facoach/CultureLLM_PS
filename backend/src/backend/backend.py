@@ -1,5 +1,6 @@
 from classes.models import ResponseCheckNewAnswers, ResponseLogout, ResponsePassreset, ResponseRegister, ResponseHuman, RequestLogin, RequestRegister, ResponseLogin, RequestAsk, RequestAnswer, ResponseAsk, ResponseAnswer, ResponseProfile, RequestValidate, ResponseLeaderboard, ResponseValidate, RequestHuman, RequestBest, RequestPassreset
 from classes.database_connection import DatabaseConnection, DBPoolManager
+from classes.security_headers import SecurityHeaders
 from database_management.execute_query import execute_query_modify, execute_query_ask
 from ai_management.ai_answers import process_ai_response 
 from utils.jwt_utils import create_access_token
@@ -48,6 +49,9 @@ get_db_connection = db_manager.get_db_connection
 
 # Applicazione FastAPI
 app = FastAPI()
+
+#inserimento headers nelle risposte per la sicurezza
+app.add_middleware(SecurityHeaders)
 
 
 @app.get("/health")
